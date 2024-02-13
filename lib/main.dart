@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'db/database.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
@@ -56,6 +57,18 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+
+    @override
+  void initState() {
+    super.initState();
+    initializeDatabase();
+  }
+
+  void initializeDatabase() async {
+    // Assuming you have a method in your DatabaseProvider to get the database instance,
+    // which will trigger onCreate if the database doesn't exist.
+    await DatabaseProvider.db.database;
+  }
 
   void _incrementCounter() {
     setState(() {

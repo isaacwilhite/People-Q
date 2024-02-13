@@ -1,6 +1,6 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:path_provider/path_provider.dart'; // Ensure you import path_provider correctly
+import 'package:path_provider/path_provider.dart';
 
 class DatabaseProvider {
   static Database? _database;
@@ -15,9 +15,18 @@ class DatabaseProvider {
     return _database!;
   }
 
+  Future<void> deleteDatabase(String path) async {
+  // Get the database path
+  var databasesPath = await getDatabasesPath();
+  String path = join(databasesPath, 'People_Q.db');
+
+  // Delete the database
+  await deleteDatabase(path);
+}
+
   initDB() async {
     var dbPath = await getDatabasesPath();
-    String path = join(dbPath, "contact_app.db");
+    String path = join(dbPath, "People_Q.db");
     return await openDatabase(path, version: 1, onOpen: (db) {}, onCreate: (Database db, int version) async {
       await db.execute("CREATE TABLE contacts("
           "id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -28,7 +37,7 @@ class DatabaseProvider {
           "bio TEXT,"
           "timesInteractedWith INTEGER DEFAULT 0"
           ")");
-      await db.execute("CREATE TABLE contact_events("
+      await db.execute("CREATE TABLE events("
           "eventId INTEGER PRIMARY KEY AUTOINCREMENT,"
           "contactId INTEGER,"
           "eventDate TEXT,"
