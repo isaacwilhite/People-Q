@@ -3,14 +3,10 @@ import '../models/contact.dart';
 import '../database.dart';
 
 class ContactDao {
-  Future<void> insertContact(Contact contact) async {
-    final db = await DatabaseProvider.db.database;
-    await db.insert(
-      'contacts',
-      contact.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
+  Future<int> insertContact(Contact contact) async {
+  final db = await DatabaseProvider.db.database;
+  return await db.insert('contacts', contact.toMap());
+}
 
   Future<List<Contact>> getContacts() async {
     final db = await DatabaseProvider.db.database;

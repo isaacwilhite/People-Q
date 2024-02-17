@@ -19,6 +19,19 @@ class EventDao {
     });
   }
 
+  Future<List<Event>> getEventsByContact(int contactId) async {
+  final db = await DatabaseProvider.db.database;
+  final List<Map<String, dynamic>> maps = await db.query(
+    'events',
+    where: 'contactId = ?',
+    whereArgs: [contactId],
+  );
+
+  return List.generate(maps.length, (i) {
+    return Event.fromMap(maps[i]);
+  });
+}
+
   Future<void> updateEvent(Event event) async {
     final db = await DatabaseProvider.db.database;
     await db.update(
