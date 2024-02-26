@@ -30,21 +30,30 @@ class DatabaseProvider {
     var dbPath = await getDatabasesPath();
     String path = join(dbPath, "People_Q.db");
     return await openDatabase(path, version: 1, onOpen: (db) {}, onCreate: (Database db, int version) async {
+      await db.execute("CREATE TABLE users("
+          "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+          "name TEXT,"
+          "email TEXT UNIQUE,"
+          "phoneNumber TEXT,"
+          "password TEXT"
+          ")");
       await db.execute("CREATE TABLE contacts("
           "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+          "userId INTEGER,"
           "name TEXT,"
           "birthday TEXT,"
           "picturePath TEXT,"
           "phoneNumber TEXT,"
           "bio TEXT,"
-          "timesInteractedWith INTEGER DEFAULT 0"
+          "timesInteractedWith INTEGER DEFAULT 0,"
+          "FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE"
           ")");
       await db.execute("CREATE TABLE events("
           "eventId INTEGER PRIMARY KEY AUTOINCREMENT,"
           "contactId INTEGER,"
           "eventDate TEXT,"
           "description TEXT,"
-          "FOREIGN KEY(contactId) REFERENCES contacts(id)"
+          "FOREIGN KEY(contactId) REFERENCES contacts(id) ON DELETE CASCADE"
           ")");
     });
   }
