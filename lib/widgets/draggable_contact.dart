@@ -1,18 +1,42 @@
-class DraggableContact extends StatelessWidget {
-  final Contact contact;
+import 'package:flutter/material.dart';
 
-  DraggableContact({required this.contact});
+
+class DraggableContactWidget extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onDragToEdge;
+
+  DraggableContactWidget({required this.child, required this.onDragToEdge});
+
+  @override
+  _DraggableContactWidgetState createState() => _DraggableContactWidgetState();
+}
+
+class _DraggableContactWidgetState extends State<DraggableContactWidget> {
+  Offset _dragOffset = Offset.zero; // Tracks the position of the drag
 
   @override
   Widget build(BuildContext context) {
-    return Draggable<Contact>(
-      data: contact,
-      child: ContactWidget(contact: contact), // Your contact display widget
-      feedback: Material(
-        child: ContactWidget(contact: contact), // Widget to show while dragging
-        elevation: 4.0,
-      ),
-      childWhenDragging: Container(), // Optional: Widget to display in place of the contact while it's being dragged
+    return GestureDetector(
+      onPanStart: (details) {
+        // Initialize drag position
+      },
+      onPanUpdate: (details) {
+        setState(() {
+          _dragOffset += details.delta;
+        });
+        // Check if drag is near the edge of the screen
+        final screenSize = MediaQuery.of(context).size;
+        if (_dragOffset.dx > screenSize.width - 100) { // Threshold - 100px from the edge
+          widget.onDragToEdge();
+        }
+      },
+      onPanEnd: (details) {
+        // Reset drag position or handle the end of the drag
+        setState(() {
+          _dragOffset = Offset.zero;
+        });
+      },
+      child: widget.child,
     );
   }
 }

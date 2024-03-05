@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../db/dao/contact_dao.dart';
 import '../widgets/bubble.dart';
+import '../widgets/contact_details.dart';
 import '../db/models/contact.dart';
+import '../services/page_navigation_controller.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -25,9 +28,10 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+  final PageController pageController = Provider.of<PageController>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Contacts'),
+        title: Text('Peeple Pond'),
       ),
       body: FutureBuilder<List<Contact>>(
         future: _contacts,
@@ -37,12 +41,21 @@ class _HomePageState extends State<HomePage> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (snapshot.data == null || snapshot.data!.isEmpty) {
-            return Center(child: Text('No contacts found'));
+            return Center(child: Text('No Peeple found'));
           } else {
             return ListView.builder(
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
-                return ContactTile(contact: snapshot.data![index]);
+  final contact = snapshot.data![index];
+  return GestureDetector(
+    onDoubleTap: () {
+      print("opening contact");
+        _navigateToContactDetailsPage(context, contact);
+      },
+    child: ContactTile(contact: contact,
+    pageController: pageController,
+      onDragUpdate: _handleDragUpdate,),
+  );
               },
             );
           }
@@ -132,4 +145,26 @@ class _HomePageState extends State<HomePage> {
     },
   );
   }
+  void _navigateToContactDetailsPage(BuildContext context, Contact contact) {
+  // Assuming you have a ContactDetailsPage that takes a Contact object
+  Navigator.of(context).push(MaterialPageRoute(
+    builder: (context) => ContactDetailsPage(contact: contact),
+  ));
+}
+void _handleDragUpdate(DragUpdateDetails details,) {
+  // Accessing PageNavigationController from Provider
+  final pageController = Provider.of<PageController>(context, listen: false);
+  final screenSize = MediaQuery.of(context).size;
+  final positionFromRightEdge = screenSize.width - details.globalPosition.dx;
+  final positionFromLeftEdge = details.globalPosition.dx;
+  if (!pageController.hasClients) return;
+
+  if (positionFromRightEdge < 50.0) {
+    pageController.nextPage( duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+  } 
+  // else if (positionFromLeftEdge < 50.0) {
+  //   pageController.previousPage(duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+  // }
+}
+
 }

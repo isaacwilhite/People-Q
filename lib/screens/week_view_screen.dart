@@ -19,11 +19,11 @@ class _WeekViewState extends State<WeekView> {
   Widget build(BuildContext context) {
     return PageView.builder(
       controller: _pageController,
+      itemCount: 7, // Represents a week
       itemBuilder: (context, index) {
         DateTime date = _startDate.add(Duration(days: index));
         return DayView(date: date); // Your custom widget for each day
       },
-      itemCount: 7, // Represents a week
     );
   }
 }

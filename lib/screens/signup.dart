@@ -14,6 +14,8 @@ class _SignupScreenState extends State<SignupScreen> {
   String _email = '';
   String _phoneNumber = '';
   String _password = '';
+  String _confirmEmail = '';
+  String _confirmPassword = '';
 
   void _submit() async {
     if (_formKey.currentState!.validate()) {
@@ -48,6 +50,15 @@ class _SignupScreenState extends State<SignupScreen> {
                 validator: (value) => value!.isEmpty ? 'Email cannot be empty' : null,
               ),
               TextFormField(
+                decoration: InputDecoration(labelText: 'Confirm Email'),
+                validator: (value) {
+                  if (value != _email) {
+                    return 'Emails must match';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
                 decoration: InputDecoration(labelText: 'Phone Number'),
                 onSaved: (value) => _phoneNumber = value!,
                 validator: (value) => value!.isEmpty ? 'Phone number cannot be empty' : null,
@@ -58,9 +69,25 @@ class _SignupScreenState extends State<SignupScreen> {
                 onSaved: (value) => _password = value!,
                 validator: (value) => value!.isEmpty ? 'Password cannot be empty' : null,
               ),
+              TextFormField(
+                decoration: InputDecoration(labelText: 'Confirm Password'),
+                obscureText: true,
+                validator: (value) {
+                  if (value != _password) {
+                    return 'Passwords must match';
+                  }
+                  return null;
+                },
+              ),
               ElevatedButton(
                 onPressed: _submit,
                 child: Text('Submit'),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Navigate to your sign-in page
+                },
+                child: Text('Already have an account? Sign in'),
               ),
             ],
           ),

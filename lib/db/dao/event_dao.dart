@@ -1,13 +1,16 @@
 import 'package:sqflite/sqflite.dart';
 import '../models/event.dart';
+import '../models/contact.dart';
 import '../database.dart';
 
 class EventDao {
   Future<void> insertEvent(Event event) async{
     final db = await DatabaseProvider.db.database;
+    final map = event.toMap();
+    map['eventDate'] = event.eventDate.toIso8601String();
     await db.insert(
       'events',
-      event.toMap(),
+      map,
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
@@ -27,10 +30,25 @@ class EventDao {
     whereArgs: [contactId],
   );
 
+  
+
   return List.generate(maps.length, (i) {
     return Event.fromMap(maps[i]);
   });
 }
+
+  Future<List<Contact>> getContactsForEventDate(String date) async {
+    final db = await DatabaseProvider.db.database;
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      'SELECT contacts.* FROM contacts '
+      'JOIN events ON contacts.id = events.contactId '
+      'WHERE events.eventDate = ?',
+      [date] // Ensure the date is in the correct format ('YYYY-MM-DD')
+    );
+    return List.generate(maps.length, (i) {
+      return Contact.fromMap(maps[i]);
+    });
+  }
 
   Future<void> updateEvent(Event event) async {
     final db = await DatabaseProvider.db.database;
