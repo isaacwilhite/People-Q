@@ -6,17 +6,17 @@ import '../services/page_navigation_controller.dart';
 
 class ContactTile extends StatelessWidget {
   final Contact contact;
-  final PageController pageController;
+  // final PageController pageController;
   final Function(DragUpdateDetails) onDragUpdate;
 
-  ContactTile({Key? key, required this.contact, required this.pageController, required this.onDragUpdate}) : super(key: key);
+  ContactTile({Key? key, required this.contact, required this.onDragUpdate}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return LongPressDraggable<Contact>(
       data: contact,
       feedback: Material(
-        child: SizedBox(width: 200, height: 60, child: ContactTile(contact: contact, pageController: pageController, onDragUpdate: onDragUpdate,)),
+        child: SizedBox(width: 200, height: 60, child: ContactTile(contact: contact, onDragUpdate: onDragUpdate,)),
         elevation: 4.0,
       ),
       onDragUpdate: onDragUpdate,

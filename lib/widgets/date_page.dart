@@ -16,48 +16,83 @@ class WeekView extends StatefulWidget {
 }
 
 class _WeekViewState extends State<WeekView> {
-  // final PageController _pageController = PageController();
+  final PageController _pageController = PageController();
   final DateTime _today = DateTime.now();
-  final DateFormat _dateFormat = DateFormat("EEEE, MMMM d, yyyy");
+
+  void handleDragUpdate(DragUpdateDetails details) {
+    final screenSize = MediaQuery.of(context).size;
+    final positionFromLeftEdge = details.globalPosition.dx;
+    final positionFromRightEdge = screenSize.width - details.globalPosition.dx;
+    
+    // Example logic for triggering a page change
+    if (positionFromRightEdge < 50) {
+      
+    print('attempting to scroll left');
+      _pageController.nextPage(duration: Duration(milliseconds: 250), curve: Curves.easeInOut);
+    }
+    else if (positionFromLeftEdge < 50.0) {
+    print('attempting to scroll left');
+    _pageController.previousPage(duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+  }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final PageController pageController = Provider.of<PageController>(context);
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Week View'),
-      ),
+      appBar: AppBar(title: Text('Week View')),
       body: PageView.builder(
-        controller: pageController,
+        controller: _pageController,
         itemBuilder: (context, index) {
           DateTime pageDate = _today.add(Duration(days: index));
-          return DatePage(date: pageDate);
+          return DatePage(date: pageDate, onDragUpdate: handleDragUpdate);
         },
-        itemCount: 7,
+        itemCount: 10,
       ),
     );
   }
 }
 
-class DatePage extends StatelessWidget {
+class DatePage extends StatefulWidget {
   final DateTime date;
+  final Function(DragUpdateDetails) onDragUpdate;
 
-  DatePage({required this.date});
+  DatePage({required this.date, required this.onDragUpdate});
+
+  @override
+  _DatePageState createState() => _DatePageState();
+}
+class _DatePageState extends State<DatePage> {
+  List<Contact>? contactsForDate;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchAndSetContacts();
+  }
+
+  void fetchAndSetContacts() async {
+    String dateString = DateFormat('yyyy-MM-dd').format(widget.date);
+    var fetchedContacts = await getContactsForEventDate(dateString); // Implement this method as needed
+    setState(() {
+      contactsForDate = fetchedContacts;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final PageController pageController = Provider.of<PageController>(context);
+    String dateString = DateFormat('yyyy-MM-dd').format(widget.date);
         return DragTarget<Contact>(
           onWillAcceptWithDetails: (contact) => true,
       onAcceptWithDetails: (details) {
         Contact contact = details.data;
-        _showEventDetailsModal(context, contact, date);
+        _showEventDetailsModal(context, contact, dateString);
       },
       builder: (context, candidateData, rejectedData) {
-    String dateString = date.toIso8601String();
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text(DateFormat("EEEE, MMMM d, yyyy").format(date)),
+        title: Text(DateFormat("EEEE, MMMM d, yyyy").format(widget.date)),
       ),
       body: FutureBuilder<List<Contact>>(
         future: getContactsForEventDate(dateString),
@@ -80,9 +115,9 @@ class DatePage extends StatelessWidget {
         _navigateToContactDetailsPage(context, contact);
       },
     child: ContactTile(contact: contact,
-    pageController: pageController,
-      onDragUpdate: _handleDragUpdate,),
-  );
+      onDragUpdate: widget.onDragUpdate,
+  )
+                );
               },
             );
           }
@@ -98,23 +133,24 @@ class DatePage extends StatelessWidget {
     builder: (context) => ContactDetailsPage(contact: contact),
   ));
 }
-void _handleDragUpdate(DragUpdateDetails details,) {
-  // Accessing PageNavigationController from Provider
-  final pageController = Provider.of<PageController>(context, listen: false);
-  final screenSize = MediaQuery.of(context).size;
-  final positionFromRightEdge = screenSize.width - details.globalPosition.dx;
-  final positionFromLeftEdge = details.globalPosition.dx;
-  if (!pageController.hasClients) return;
+// void _handleDragUpdate(DragUpdateDetails details, BuildContext context) {
+//   // Accessing PageNavigationController from Provider
+//   final pageController = Provider.of<PageController>(context, listen: false);
+//   final screenSize = MediaQuery.of(context).size;
+//   final positionFromRightEdge = screenSize.width - details.globalPosition.dx;
+//   final positionFromLeftEdge = details.globalPosition.dx;
+//   // if (!pageController.hasClients) return;
 
-  if (positionFromRightEdge < 50.0) {
-    pageController.nextPage( duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
-  } 
-  // else if (positionFromLeftEdge < 50.0) {
-  //   pageController.previousPage(duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
-  // }
-}
-}
+//   if (positionFromRightEdge < 50.0) {
 
+//     print('attempting to scroll right');
+//     pageController.nextPage( duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+//   } 
+//   else if (positionFromLeftEdge < 50.0) {
+//     print('attempting to scroll left');
+//     pageController.previousPage(duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+//   }
+// }
 void _showEventDetailsModal(BuildContext context, Contact contact, date) {
   String description = ''; // To capture the user input
 
@@ -143,6 +179,7 @@ void _showEventDetailsModal(BuildContext context, Contact contact, date) {
               );
               await EventDao().insertEvent(newEvent);
               Navigator.of(context).pop();
+              fetchAndSetContacts();
             },
           ),
         ],
@@ -150,3 +187,5 @@ void _showEventDetailsModal(BuildContext context, Contact contact, date) {
     },
   );
 }
+}
+

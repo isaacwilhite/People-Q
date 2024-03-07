@@ -53,7 +53,6 @@ class _HomePageState extends State<HomePage> {
         _navigateToContactDetailsPage(context, contact);
       },
     child: ContactTile(contact: contact,
-    pageController: pageController,
       onDragUpdate: _handleDragUpdate,),
   );
               },

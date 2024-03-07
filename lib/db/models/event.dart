@@ -1,7 +1,7 @@
 class Event {
   int? eventId;
   int? contactId;
-  DateTime eventDate;
+  String eventDate;
   String description;
 
   Event({
@@ -15,7 +15,7 @@ class Event {
     return {
       'eventId': eventId,
       'contactId': contactId,
-      'eventDate': eventDate.toIso8601String(),
+      'eventDate': eventDate,
       'description': description,
     };
   }
@@ -24,7 +24,7 @@ class Event {
     return Event(
       eventId: map['eventId'],
       contactId: map['contactId'],
-      eventDate: DateTime.parse(map['eventDate']),
+      eventDate: map['eventDate'],
       description: map['description'],
     );
   }

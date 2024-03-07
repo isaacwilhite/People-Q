@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import '../models/event.dart';
 import '../models/contact.dart';
@@ -7,13 +8,9 @@ class EventDao {
   Future<void> insertEvent(Event event) async{
     final db = await DatabaseProvider.db.database;
     final map = event.toMap();
-    map['eventDate'] = event.eventDate.toIso8601String();
-    await db.insert(
-      'events',
-      map,
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
+
+  await db.insert('events', map, conflictAlgorithm: ConflictAlgorithm.replace);
+}
     Future<List<Event>> getEvents() async {
     final db = await DatabaseProvider.db.database;
     final List<Map<String, dynamic>> maps = await db.query('events');
@@ -37,7 +34,7 @@ class EventDao {
   });
 }
 
-  Future<List<Contact>> getContactsForEventDate(String date) async {
+  Future<List<Contact>> getContactsFoEventDate(String date) async {
     final db = await DatabaseProvider.db.database;
     final List<Map<String, dynamic>> maps = await db.rawQuery(
       'SELECT contacts.* FROM contacts '
