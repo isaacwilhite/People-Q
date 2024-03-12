@@ -1,3 +1,4 @@
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:flutter/material.dart';
 import 'package:people_q/screens/signup.dart';
 import 'db/database.dart';
@@ -9,6 +10,8 @@ import 'dart:async';
 import 'package:provider/provider.dart';
 import './utils/global_drag.dart';
 import './services/page_navigation_controller.dart';
+import "amplifyconfiguration.dart";
+import 'package:amplify_flutter/amplify_flutter.dart';
 
 void main() async {
   Provider.debugCheckInvalidValueType = null;
@@ -23,6 +26,7 @@ void main() async {
   )
   );
 }
+
 
 class MyApp extends StatefulWidget {
   @override
