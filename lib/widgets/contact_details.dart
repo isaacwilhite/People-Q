@@ -36,7 +36,6 @@ class ContactDetailsPage extends StatelessWidget {
               'Bio: ${contact.bio}',
               style: TextStyle(fontSize: 20),
             ),
-            // Add more fields as needed
           ],
         ),
       ),

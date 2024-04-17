@@ -13,7 +13,6 @@ import 'package:people_q/screens/home.dart';
 //     );
 //     if (result.isSignedIn) {
 //       print("Sign in successful");
-//       // Optionally fetch user data here and navigate to home page
 //     Navigator.pushReplacementNamed(context, '/home');
     
 //     }

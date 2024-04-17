@@ -17,9 +17,9 @@ Future<void> signUpUser(String email, String password, String name, String birth
     );
     if (result.isSignUpComplete) {
       print("Sign up successful");
-      // Navigate to the sign-in page or confirmation page
+
     } else {
-      // Handle next steps required in the sign-up process, e.g., confirmation code
+
     }
   } catch (e) {
     print("An error occurred during sign up: $e");

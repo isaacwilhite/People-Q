@@ -33,9 +33,8 @@ Future<void> signUpUser() async {
     Map<CognitoUserAttributeKey, String> userAttributes = {
       CognitoUserAttributeKey.email: _emailController.text,
       CognitoUserAttributeKey.name: _nameController.text,
-      CognitoUserAttributeKey.phoneNumber: '+1${_phoneNumberController.text}', // Ensure correct format
-      CognitoUserAttributeKey.birthdate: _birthdateController.text, // Ensure correct format
-      // You can add other attributes here
+      CognitoUserAttributeKey.phoneNumber: '+1${_phoneNumberController.text}', 
+      CognitoUserAttributeKey.birthdate: _birthdateController.text, 
     };
 
     final SignUpResult result = await Amplify.Auth.signUp(
@@ -49,7 +48,7 @@ Future<void> signUpUser() async {
     } else {
            Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => VerificationPage(email: _emailController.text)), // Change SignInScreen to your sign-in screen widget
+        MaterialPageRoute(builder: (context) => VerificationPage(email: _emailController.text)),
       );
     }
   } catch (e) {
@@ -107,7 +106,7 @@ Future<void> signUpUser() async {
                 ),
                 TextButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/signin'); // Assuming you have a route named '/signup'
+                  Navigator.pushNamed(context, '/signin');
                 },
                 child: Text("Already have an account? Sign in"),
               ),

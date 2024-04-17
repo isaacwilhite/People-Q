@@ -40,12 +40,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: CheckAuth(), // A widget that checks the auth status and navigates accordingly
+      home: CheckAuth(), 
       routes: {
         '/home': (context) => HomePage(),
         '/signup': (context) => SignUpScreen(),
         '/signin': (context) => SignInScreen()
-        // Add more named routes as needed
       },
     );
   }
@@ -80,7 +79,6 @@ class _CheckAuthState extends State<CheckAuth> {
 
   @override
   Widget build(BuildContext context) {
-    // This widget is only responsible for checking auth status and navigating
     return Container(
       alignment: Alignment.center,
       child: CircularProgressIndicator(),
@@ -134,7 +132,6 @@ class _CheckAuthState extends State<CheckAuth> {
 
 //   @override
 //   Widget build(BuildContext context) {
-//     // No need for StreamBuilder if you're not listening to a stream here
 //     return MaterialApp(
 //       home: Scaffold(
 //         body: PageView(
@@ -142,9 +139,7 @@ class _CheckAuthState extends State<CheckAuth> {
 //           controller: PageController(initialPage: _isUserLoggedIn ? 1 : 0), // Adjust based on sign-in status
 //           children: [
 //             SignUpScreen(), // Assuming this is your sign-up screen
-//             HomePage(), // Assuming this is your main content page after sign-in
-//             // You can add WeekView or other pages as needed
-//           ],
+//             HomePage(), // Assuming this is your main content page after sign-in//           ],
 //         ),
 //       ),
 //     );

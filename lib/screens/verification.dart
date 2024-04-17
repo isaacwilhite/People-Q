@@ -24,13 +24,11 @@ class _VerificationPageState extends State<VerificationPage> {
           confirmationCode: _verificationCode,
         );
         if (result.isSignUpComplete) {
-          // Navigate to your app's home page or sign-in page
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => HomePage()),
           );
         } else {
-          // Handle any other steps required as per your app flow
         }
       } catch (e) {
         print("An error occurred during confirmation: $e");

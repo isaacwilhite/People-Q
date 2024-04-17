@@ -40,7 +40,7 @@ class EventDao {
       'SELECT contacts.* FROM contacts '
       'JOIN events ON contacts.id = events.contactId '
       'WHERE events.eventDate = ?',
-      [date] // Ensure the date is in the correct format ('YYYY-MM-DD')
+      [date] // ('YYYY-MM-DD')
     );
     return List.generate(maps.length, (i) {
       return Contact.fromMap(maps[i]);

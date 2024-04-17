@@ -23,7 +23,7 @@ class DayView extends StatelessWidget {
           child: Column(
             children: <Widget>[
               Text(DateFormat("EEEE, MMMM d, yyyy").format(date), style: Theme.of(context).textTheme.titleLarge),
-              // Here, you could also list events for this day
+              
             ],
           ),
         );
@@ -31,7 +31,7 @@ class DayView extends StatelessWidget {
     );
   }
 void _showEventDetailsModal(BuildContext context, Contact contact, date) {
-  String description = ''; // To capture the user input
+  String description = ''; 
 
   showDialog(
     context: context,
@@ -50,11 +50,10 @@ void _showEventDetailsModal(BuildContext context, Contact contact, date) {
           TextButton(
             child: Text('Add'),
             onPressed: () async {
-              // Assuming Event class has a constructor that takes date, description, and contactId
               Event newEvent = Event(
-                eventDate: date, // Format the date as needed
+                eventDate: date,
                 description: description,
-                contactId: contact.id, // Assuming 'contact' has an 'id' field
+                contactId: contact.id,
               );
               await EventDao().insertEvent(newEvent);
               Navigator.of(context).pop();

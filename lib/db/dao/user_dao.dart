@@ -9,7 +9,7 @@ class UserDao {
     final db = await DatabaseProvider.db.database;
     final hashedPassword = _hashPassword(user.password);
     final userMap = user.toMap();
-    userMap['password'] = hashedPassword; // Update the map with the hashed password
+    userMap['password'] = hashedPassword;
     return await db.insert('users', userMap, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
@@ -25,7 +25,7 @@ class UserDao {
     final db = await DatabaseProvider.db.database;
     final hashedPassword = _hashPassword(user.password);
     final userMap = user.toMap();
-    userMap['password'] = hashedPassword; // Update the map with the hashed password
+    userMap['password'] = hashedPassword;
     await db.update(
       'users',
       userMap,
@@ -44,7 +44,7 @@ class UserDao {
   }
 
   String _hashPassword(String password) {
-    var bytes = utf8.encode(password); // data being hashed
+    var bytes = utf8.encode(password);
     var digest = sha256.convert(bytes);
     return digest.toString();
   }

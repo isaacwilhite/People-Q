@@ -31,21 +31,18 @@ class _HomePageState extends State<HomePage> {
   // }
 
   void _refreshContacts() async {
-    final userId = await getCurrentUserId();  // Ensure you handle this asynchronously
+    final userId = await getCurrentUserId();
     if (userId != null) {
-      _contacts = ContactDAO().fetchContacts(userId); // This will get the contacts
-      setState(() {}); // Call setState to trigger a rebuild
+      _contacts = ContactDAO().fetchContacts(userId);
+      setState(() {});
     }
   }
 
 Future<String?> getCurrentUserId() async {
   try {
-    // Fetch the current Auth session
     AuthSession session = await Amplify.Auth.fetchAuthSession();
-    
-    // Cast to CognitoAuthSession to access user sub (unique ID)
     if (session is CognitoAuthSession && session.isSignedIn) {
-      return session.userSub; // The user's unique sub in Cognito
+      return session.userSub;
     }
   } catch (e) {
     print(e);
@@ -93,10 +90,9 @@ Future<String?> getCurrentUserId() async {
     );
   }
   void _openCreateContactModal(BuildContext context) async {
-  String? userId = await getCurrentUserId(); // This returns a nullable String
+  String? userId = await getCurrentUserId();
   if (userId == null) {
     print("User ID is null. User might not be logged in.");
-    // Optionally, show an error or redirect to a login screen
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -106,13 +102,13 @@ Future<String?> getCurrentUserId() async {
           TextButton(
             child: Text('OK'),
             onPressed: () {
-              Navigator.of(ctx).pop(); // Dismiss the dialog
+              Navigator.of(ctx).pop();
             },
           ),
         ],
       ),
     );
-    return; // Exit if userId is null to prevent further execution
+    return;
   }
 
   showModalBottomSheet(
@@ -166,7 +162,7 @@ Future<String?> getCurrentUserId() async {
                         try {
                           await ContactDAO().insertContact(
                             Contact(
-                              userId: userId, // userId is guaranteed to be non-null here
+                              userId: userId,
                               name: nameController.text,
                               phoneNumber: phoneNumberController.text,
                               bio: bioController.text,

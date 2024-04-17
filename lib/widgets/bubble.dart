@@ -22,7 +22,7 @@ class ContactTile extends StatelessWidget {
       onDragUpdate: onDragUpdate,
       child: ListTile(
         leading: CircleAvatar(
-          child: Text(contact.name[0]), // Assuming 'name' is a field in your Contact model
+          child: Text(contact.name[0]), 
         ),
         title: Text(contact.name),
         subtitle: Text(contact.phoneNumber),

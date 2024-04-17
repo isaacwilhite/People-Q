@@ -1,7 +1,5 @@
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
-// Assume you have a function called signInUser defined elsewhere
-// import 'your_auth_functions.dart';
 
 class SignInScreen extends StatefulWidget {
   @override
@@ -16,7 +14,6 @@ class _SignInScreenState extends State<SignInScreen> {
   void _signIn() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      // Call your sign in function here
       await signInUser(_email, _password);
     }
   }
@@ -68,7 +65,7 @@ class _SignInScreenState extends State<SignInScreen> {
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/signup'); // Assuming you have a route named '/signup'
+                  Navigator.pushNamed(context, '/signup'); 
                 },
                 child: Text("Don't have an account? Sign up"),
               ),

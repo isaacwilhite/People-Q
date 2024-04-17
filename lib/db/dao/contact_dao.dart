@@ -24,7 +24,7 @@ class ContactDAO {
     var response = await http.post(
       Uri.parse("$apiUrl/contacts"),
       headers: {"Content-Type": "application/json"},
-      body: jsonEncode(contact.toMap()), // Assuming Contact has a toJson method
+      body: jsonEncode(contact.toMap()),
     );
     if (response.statusCode != 200) {
       throw Exception("Failed to insert contact");
