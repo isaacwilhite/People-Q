@@ -21,10 +21,10 @@ packages:
     dependency: transitive
     description:
       name: amplify_analytics_pinpoint
-      sha256: "29f6b4fc970c5fd8c2b8fb7980ba4cea14fd7086cdfb859e48a2c65274fb288d"
+      sha256: "2cbb5a25b604e1103f5028f8eb71342eb77fb634cbca459a2a16da64a893bfe6"
       url: "https://pub.dev"
     source: hosted
-    version: "1.7.0"
+    version: "1.7.1"
   amplify_analytics_pinpoint_dart:
     dependency: transitive
     description:
@@ -53,18 +53,18 @@ packages:
     dependency: "direct main"
     description:
       name: amplify_auth_cognito
-      sha256: "849d31d1587e090f43b9bf88bfd26cae3e643788a07358770302b608e759f8ab"
+      sha256: b2b07bc5d15219f4e558e8dfdafc7afcd826b0549c3bd851617fb1ecbdd24dc9
       url: "https://pub.dev"
     source: hosted
-    version: "1.7.0"
+    version: "1.7.2"
   amplify_auth_cognito_dart:
     dependency: transitive
     description:
       name: amplify_auth_cognito_dart
-      sha256: "5f36a1d5b189e81428cd4fa07ae2486dbe0f393b23955d93ae79e16240fe7185"
+      sha256: "6eb28fcd2d698c0ee05f7ec10eb071f7afedef962d8bdb165d2333d36c28023a"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.10"
+    version: "0.10.12"
   amplify_core:
     dependency: transitive
     description:
