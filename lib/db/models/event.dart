@@ -1,6 +1,6 @@
 class Event {
   int? eventId;
-  int contactId;
+  int? contactId;
   String eventDate;
   String description;
 

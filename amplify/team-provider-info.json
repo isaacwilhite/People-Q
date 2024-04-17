@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-peopleq-dev-4c010-authRole",
+      "UnauthRoleArn": "arn:aws:iam::851725312874:role/amplify-peopleq-dev-4c010-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::851725312874:role/amplify-peopleq-dev-4c010-authRole",
+      "Region": "us-east-2",
+      "DeploymentBucketName": "amplify-peopleq-dev-4c010-deployment",
+      "UnauthRoleName": "amplify-peopleq-dev-4c010-unauthRole",
+      "StackName": "amplify-peopleq-dev-4c010",
+      "StackId": "arn:aws:cloudformation:us-east-2:851725312874:stack/amplify-peopleq-dev-4c010/0864d890-f5d5-11ee-a8a9-024809192f27",
+      "AmplifyAppId": "d2ga33nw1nqqr1"
+    },
+    "categories": {
+      "auth": {
+        "peepleqauth": {}
+      }
+    }
+  }
+}
