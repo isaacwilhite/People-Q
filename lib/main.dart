@@ -14,6 +14,7 @@ import './utils/global_drag.dart';
 import './services/page_navigation_controller.dart';
 import "amplifyconfiguration.dart";
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 
 
 void main() async {
@@ -23,9 +24,11 @@ void main() async {
 }
 
 Future<void> _configureAmplify() async {
+  AmplifyStorageS3 storagePlugin = AmplifyStorageS3();
   AmplifyAuthCognito authPlugin = AmplifyAuthCognito();
   try {
     await Amplify.addPlugin(authPlugin);
+    await Amplify.addPlugin(storagePlugin);
     await Amplify.configure(amplifyconfig);
   } catch (e) {
     print("Could not configure Amplify: $e");

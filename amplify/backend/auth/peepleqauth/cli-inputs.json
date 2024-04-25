@@ -1,6 +1,8 @@
 {
   "version": "1",
   "cognitoConfig": {
+    "identityPoolName": "peepleqauth_identitypool_abf0d968",
+    "allowUnauthenticatedIdentities": false,
     "resourceNameTruncated": "peoplec8a02310",
     "userPoolName": "peepleqUsers",
     "autoVerifiedAttributes": [
@@ -36,7 +38,7 @@
     "userpoolClientSetAttributes": false,
     "sharedId": "c8a02310",
     "resourceName": "peepleqauth",
-    "authSelections": "userPoolOnly",
+    "authSelections": "identityPoolAndUserPool",
     "useDefault": "manual",
     "usernameAttributes": [
       "email"
@@ -48,6 +50,20 @@
     "userPoolGroupList": [],
     "serviceName": "Cognito",
     "usernameCaseSensitive": false,
-    "useEnabledMfas": true
+    "useEnabledMfas": true,
+    "authRoleArn": {
+      "Fn::GetAtt": [
+        "AuthRole",
+        "Arn"
+      ]
+    },
+    "unauthRoleArn": {
+      "Fn::GetAtt": [
+        "UnauthRole",
+        "Arn"
+      ]
+    },
+    "breakCircularDependency": true,
+    "dependsOn": []
   }
 }

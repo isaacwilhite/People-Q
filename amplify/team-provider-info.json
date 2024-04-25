@@ -14,6 +14,15 @@
     "categories": {
       "auth": {
         "peepleqauth": {}
+      },
+      "function": {
+        "S3Trigger121a232f": {
+          "deploymentBucketName": "amplify-peopleq-dev-4c010-deployment",
+          "s3Key": "amplify-builds/S3Trigger121a232f-3969754733313557787a-build.zip"
+        }
+      },
+      "storage": {
+        "images": {}
       }
     }
   }

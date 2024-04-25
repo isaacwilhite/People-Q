@@ -1,7 +1,9 @@
+
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
 import '../db/dao/contact_dao.dart';
@@ -9,7 +11,10 @@ import '../widgets/bubble.dart';
 import '../widgets/contact_details.dart';
 import '../db/models/contact.dart';
 import '../services/page_navigation_controller.dart';
-
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
+import 'package:amplify_storage_s3/amplify_storage_s3.dart';
+import 'package:aws_common/vm.dart';
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -17,11 +22,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   Future<List<Contact>>? _contacts;
-
+  DateTime selectedDate = DateTime.now();
+  TextEditingController dateInputController = TextEditingController();
   @override
   void initState() {
     super.initState();
     _refreshContacts();
+    dateInputController.text = DateFormat('yyyy-MM-dd').format(selectedDate);
   }
 
   //   void _refreshContacts() {
@@ -89,7 +96,7 @@ Future<String?> getCurrentUserId() async {
       ),
     );
   }
-  void _openCreateContactModal(BuildContext context) async {
+void _openCreateContactModal(BuildContext context) async {
   String? userId = await getCurrentUserId();
   if (userId == null) {
     print("User ID is null. User might not be logged in.");
@@ -116,10 +123,11 @@ Future<String?> getCurrentUserId() async {
     builder: (BuildContext context) {
       TextEditingController nameController = TextEditingController();
       TextEditingController phoneNumberController = TextEditingController();
-      TextEditingController birthdayController = TextEditingController();
       TextEditingController picturePathController = TextEditingController();
       TextEditingController bioController = TextEditingController();
       String errorMessage = '';
+      DateTime selectedDate = DateTime.now();
+      TextEditingController dateInputController = TextEditingController(text: DateFormat('yyyy-MM-dd').format(selectedDate));
 
       return StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
@@ -138,12 +146,23 @@ Future<String?> getCurrentUserId() async {
                     decoration: InputDecoration(labelText: 'Phone Number'),
                   ),
                   TextField(
-                    controller: birthdayController,
+                    controller: dateInputController,
                     decoration: InputDecoration(labelText: 'Birthday'),
+                    readOnly: true, 
+                    onTap: () => _selectDate(context, setState),
                   ),
-                  TextField(
-                    controller: picturePathController,
-                    decoration: InputDecoration(labelText: 'Picture Path'),
+                  GestureDetector(
+                    onTap: () => _uploadImage(context, picturePathController, setState),
+                    child: Container(
+                      height: 50,
+                      width: double.infinity,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(picturePathController.text.isEmpty ? 'Upload Picture' : 'Change Picture'),
+                    ),
                   ),
                   TextField(
                     controller: bioController,
@@ -156,7 +175,7 @@ Future<String?> getCurrentUserId() async {
                     onPressed: () async {
                       if (nameController.text.isNotEmpty &&
                           phoneNumberController.text.isNotEmpty &&
-                          birthdayController.text.isNotEmpty &&
+                          dateInputController.text.isNotEmpty &&
                           picturePathController.text.isNotEmpty &&
                           bioController.text.isNotEmpty) {
                         try {
@@ -167,7 +186,7 @@ Future<String?> getCurrentUserId() async {
                               phoneNumber: phoneNumberController.text,
                               bio: bioController.text,
                               picturePath: picturePathController.text,
-                              birthday: birthdayController.text,
+                              birthday: DateFormat('yyyy-MM-dd').parse(dateInputController.text),
                             ),
                           );
                           Navigator.pop(context);
@@ -194,6 +213,55 @@ Future<String?> getCurrentUserId() async {
       );
     },
   );
+}
+
+Future<void> _selectDate(BuildContext context, StateSetter setState) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() { 
+        selectedDate = picked;
+        dateInputController.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
+    }
+  }
+
+Future<void> _uploadImage(BuildContext context, TextEditingController picturePathController, StateSetter setState) async {
+  final result = await FilePicker.platform.pickFiles(
+    type: FileType.custom,
+    withData: false,
+    // Ensure to get file stream for better performance
+    withReadStream: true,
+    allowedExtensions: ['jpg', 'png'],
+  );
+
+  if (result == null) {
+    safePrint('No file selected');
+    return;
+  }
+
+  // Upload file with its filename as the key
+  final platformFile = result.files.single;
+  try {
+    final result = await Amplify.Storage.uploadFile(
+      localFile: AWSFile.fromStream(
+        platformFile.readStream!,
+        size: platformFile.size,
+      ),
+      key: platformFile.name,
+      onProgress: (progress) {
+        safePrint('Fraction completed: ${progress.fractionCompleted}');
+      },
+    ).result;
+    safePrint('Successfully uploaded file: ${result.uploadedItem.key}');
+  } on StorageException catch (e) {
+    safePrint('Error uploading file: $e');
+    rethrow;
+  }
 }
 
 void _navigateToContactDetailsPage(BuildContext context, Contact contact) {
