@@ -1,6 +1,6 @@
 
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
-import 'package:sqflite/sqflite.dart';
+// import 'package:sqflite/sqflite.dart';
 import '../models/contact.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -36,6 +36,7 @@ class ContactDAO {
       }),
     );
     if (response.statusCode != 200) {
+      print(contact);
       throw Exception("Failed to insert contact");
     }
   }
