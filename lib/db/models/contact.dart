@@ -2,7 +2,7 @@ class Contact {
   int? id;
   String userId;
   String name;
-  String birthday;
+  DateTime birthday;
   String picturePath;
   String phoneNumber;
   String bio;
@@ -34,14 +34,14 @@ class Contact {
 
   static Contact fromMap(Map<String, dynamic> map) {
     return Contact(
-      id: map['id'],
-      userId: map['userId'],
-      name: map['name'],
-      birthday: map['birthday'],
-      picturePath: map['picturePath'],
-      phoneNumber: map['phoneNumber'],
-      bio: map['bio'],
-      timesInteractedWith: map['timesInteractedWith'],
+id: map['id'] as int,
+    userId: map['userid'] as String? ?? 'Unknown User',
+    name: map['name'] as String? ?? 'No Name',
+    birthday: DateTime.parse(map['birthday'] as String? ?? '1900-01-01T00:00:00.000Z'),
+    picturePath: map['picturepath'] as String? ?? 'path/to/default.jpg',
+    phoneNumber: map['phonenumber'] as String? ?? 'No Phone Number',
+    bio: map['bio'] as String? ?? 'No Bio Available',
+    timesInteractedWith: map['timesinteractedwith'] as int? ?? 0,
     );
   }
 }

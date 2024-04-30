@@ -6,65 +6,65 @@ import '../db/dao/event_dao.dart';
 import '../db/dao/contact_dao.dart';
 import './bubble.dart';
 
-class DayView extends StatelessWidget {
-  final DateTime date;
+// class DayView extends StatelessWidget {
+//   final DateTime date;
 
-  DayView({required this.date});
+//   DayView({required this.date});
 
-  @override
-  Widget build(BuildContext context) {
-    return DragTarget<Contact>(
-      onAcceptWithDetails: (contact) {
-        _showEventDetailsModal(context, contact as Contact, date);
-      },
-      builder: (context, candidateData, rejectedData) {
-        return Container(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: <Widget>[
-              Text(DateFormat("EEEE, MMMM d, yyyy").format(date), style: Theme.of(context).textTheme.titleLarge),
+//   @override
+//   Widget build(BuildContext context) {
+//     return DragTarget<Contact>(
+//       onAcceptWithDetails: (contact) {
+//         _showEventDetailsModal(context, contact as Contact, date);
+//       },
+//       builder: (context, candidateData, rejectedData) {
+//         return Container(
+//           padding: const EdgeInsets.all(8.0),
+//           child: Column(
+//             children: <Widget>[
+//               Text(DateFormat("EEEE, MMMM d, yyyy").format(date), style: Theme.of(context).textTheme.titleLarge),
               
-            ],
-          ),
-        );
-      },
-    );
-  }
-void _showEventDetailsModal(BuildContext context, Contact contact, date) {
-  String description = ''; 
+//             ],
+//           ),
+//         );
+//       },
+//     );
+//   }
+// void _showEventDetailsModal(BuildContext context, Contact contact, date) {
+//   String description = ''; 
 
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Text('Add Event'),
-        content: TextField(
-          onChanged: (value) => description = value,
-          decoration: InputDecoration(hintText: "Event Description"),
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: Text('Cancel'),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          TextButton(
-            child: Text('Add'),
-            onPressed: () async {
-              Event newEvent = Event(
-                eventDate: date,
-                description: description,
-                contactId: contact.id,
-              );
-              await EventDao().insertEvent(newEvent);
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
-}
+//   showDialog(
+//     context: context,
+//     builder: (context) {
+//       return AlertDialog(
+//         title: Text('Add Event'),
+//         content: TextField(
+//           onChanged: (value) => description = value,
+//           decoration: InputDecoration(hintText: "Event Description"),
+//         ),
+//         actions: <Widget>[
+//           TextButton(
+//             child: Text('Cancel'),
+//             onPressed: () => Navigator.of(context).pop(),
+//           ),
+//           TextButton(
+//             child: Text('Add'),
+//             onPressed: () async {
+//               Event newEvent = Event(
+//                 eventDate: date,
+//                 description: description,
+//                 contactId: contact.id,
+//               );
+//               await EventDao().insertEvent(newEvent);
+//               Navigator.of(context).pop();
+//             },
+//           ),
+//         ],
+//       );
+//     },
+//   );
+// }
+// }
 //   _showAddEventDialog(BuildContext context, Contact contact, DateTime date) {
 //   TextEditingController descriptionController = TextEditingController();
 
