@@ -4,11 +4,13 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:image_size_getter/file_input.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
 import '../db/dao/contact_dao.dart';
@@ -29,27 +31,45 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late XFile? imageFile;
-  Uint8List? processedImageBytes;
+  Uint8List processedImageBytes = Uint8List(0);
   final ImagePicker _picker = ImagePicker();
   double linearProgress = 0.0;
-  
+  String apiKey = dotenv.env['REMOVE_BG_KEY']!;
+  Remove removeBgService = Remove();
 
-  
+  TextEditingController nameController = TextEditingController();
+      TextEditingController phoneNumberController = TextEditingController();
+      TextEditingController bioController = TextEditingController();
+      String errorMessage = '';
+      DateTime selectedDate = DateTime.now();
+      TextEditingController? dateInputController;
+
   Future<List<Contact>>? _contacts;
-  DateTime selectedDate = DateTime.now();
-  TextEditingController dateInputController = TextEditingController();
+
+
   @override
   void initState() {
     super.initState();
-    _refreshContacts();
-    dateInputController.text = DateFormat('yyyy-MM-dd').format(selectedDate);
+    DateTime selectedDate = DateTime.now();
+dateInputController = TextEditingController(text: DateFormat('yyyy-MM-dd').format(selectedDate));    _refreshContacts();
   }
 
-  //   void _refreshContacts() {
-  //   setState(() {
-  //     _contacts = fetchAndSetContacts();
-  //   });
-  // }
+    @override
+  void dispose() {
+    nameController.dispose();
+    phoneNumberController.dispose();
+    bioController.dispose();
+    dateInputController!.dispose();
+    super.dispose();
+  }
+
+  void clearTextFields() {
+  nameController.clear();
+  phoneNumberController.clear();
+  dateInputController!.clear();
+  bioController.clear();
+}
+
 
   void _refreshContacts() async {
     final userId = await getCurrentUserId();
@@ -59,7 +79,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> pickAndProcessImage() async {
+  Future pickAndProcessImage(BuildContext context, StateSetter setState) async {
     final XFile? pickedImage = await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedImage != null) {
@@ -70,13 +90,13 @@ class _HomePageState extends State<HomePage> {
       // Assuming you have a valid API key for remover_bg
       Remove().bg(
         File(pickedImage.path),
-        privateKey: "your_private_key",
+        privateKey: apiKey,
         onUploadProgressCallback: (progressValue) {
           print(progressValue);
         },
       ).then((data) {
         setState(() {
-          processedImageBytes = data;
+          processedImageBytes = data!;
         });
       }).catchError((error) {
         print("Failed to remove background: $error");
@@ -116,29 +136,40 @@ Future<String?> getCurrentUserId() async {
           } else if (snapshot.data!.isEmpty) {
             return Center(child: Text('No contacts found'));
           } else {
-            return ListView.builder(
-              itemCount: snapshot.data!.length,
-              itemBuilder: (context, index) {
-                Contact contact = snapshot.data![index];
-                return ListTile(
-                  title: Text(contact.name),
-                  onTap: () {
-                    _navigateToContactDetailsPage(context, contact);
-                  },
-                );
-              },
-            );
-          }
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _openCreateContactModal(context);
-        },
-        child: Icon(Icons.add),
-      ),
-    );
-  }
+            return GridView.builder(
+            padding: EdgeInsets.all(8),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 5, // Defines the number of columns
+              crossAxisSpacing: 10, // Space between columns
+              mainAxisSpacing: 10, // Space between rows
+              childAspectRatio: 1, // Aspect ratio for each cell
+            ),
+            itemCount: snapshot.data!.length,
+            itemBuilder: (context, index) {
+              Contact contact = snapshot.data![index];
+              String imageUrl = 'https://image-bucket4c010-dev.s3.us-east-2.amazonaws.com/public/uploaded-images${contact.picturePath}';
+              return GestureDetector(
+                onTap: () => _navigateToContactDetailsPage(context, contact),
+                child: CircleAvatar(
+                  radius: 40,
+                  backgroundColor: getRandomColor(),
+                  backgroundImage: contact.picturePath.isNotEmpty ? NetworkImage(imageUrl) : null,
+                  child: contact.picturePath.isEmpty ? Icon(Icons.person, size: 40) : null,
+                ),
+              );
+            },
+          );
+        }
+      },
+    ),
+    floatingActionButton: FloatingActionButton(
+      onPressed: () {
+        _openCreateContactModal(context);
+      },
+      child: Icon(Icons.add),
+    ),
+  );
+}
 void _openCreateContactModal(BuildContext context) async {
   String? userId = await getCurrentUserId();
   if (userId == null) {
@@ -164,47 +195,22 @@ void _openCreateContactModal(BuildContext context) async {
   showModalBottomSheet(
     context: context,
     builder: (BuildContext context) {
-      TextEditingController nameController = TextEditingController();
-      TextEditingController phoneNumberController = TextEditingController();
-      TextEditingController bioController = TextEditingController();
-      String errorMessage = '';
-      DateTime selectedDate = DateTime.now();
-      TextEditingController dateInputController = TextEditingController(text: DateFormat('yyyy-MM-dd').format(selectedDate));
-      Uint8List? imageBytes;
-
 
       return StatefulBuilder(
-        builder: (BuildContext context, StateSetter setState) {
+        builder: (BuildContext context, StateSetter modalSetState) {
           return Padding(
             padding: const EdgeInsets.all(20.0),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  SizedBox(height: 10),
                   GestureDetector(
-                    onTap: () async {
-                      final pickedImage = await _pickImage(); // Adjust to use remover_bg
-                      if (pickedImage != null) {
-                        // Process the image and update UI
-                        final processedBytes = await Remove.bg(
-                          pickedImage,
-                          privateKey: "your_private_key",
-
-              setState(() {
-                linearProgress = progressValue;
-              });
-                        );
-                        setState(() {
-                          imageBytes = processedBytes;
-                        });
-                      }
-                    },
+                    onTap: () => pickAndProcessImage(context, modalSetState),
                     child: CircleAvatar(
-                      radius: 50,
-                      backgroundColor: Colors.grey.shade200,
-                      backgroundImage: imageBytes != null ? MemoryImage(imageBytes!) : null,
-                      child: imageBytes == null ? Icon(Icons.add_a_photo) : null,
+                      radius: 60,
+                      backgroundColor: const Color.fromARGB(255, 245, 112, 112),
+                      backgroundImage: processedImageBytes != null ? MemoryImage(processedImageBytes!) : null,
+                      child: processedImageBytes == null ? Icon(Icons.camera_alt, size: 30) : null,
                     ),
                   ),
                   TextField(
@@ -245,22 +251,28 @@ void _openCreateContactModal(BuildContext context) async {
                     onPressed: () async {
                       if (nameController.text.isNotEmpty &&
                           phoneNumberController.text.isNotEmpty &&
-                          dateInputController.text.isNotEmpty &&
+                          dateInputController!.text.isNotEmpty &&
                           bioController.text.isNotEmpty) {
                         try {
+                          File imageFile = await createFileFromBytes(processedImageBytes);
+                          _uploadImage(imageFile, context);
                           await ContactDAO().insertContact(
                             Contact(
                               userId: userId,
                               name: nameController.text,
                               phoneNumber: phoneNumberController.text,
                               bio: bioController.text,
-                              picturePath: picturePathController.text,
-                              birthday: DateFormat('yyyy-MM-dd').parse(dateInputController.text),
+                              picturePath: imageFile.path,
+                              birthday: DateFormat('yyyy-MM-dd').parse(dateInputController!.text),
                             ),
                           );
-                          _uploadImage(_pickedImage, context);
+                                  modalSetState(() {
+          processedImageBytes = Uint8List(0); 
+        });
+                          clearTextFields();
                           Navigator.pop(context);
                           _refreshContacts();
+                          
                         } catch (e) {
                           print("Failed to add contact: $e");
                           setState(() {
@@ -295,54 +307,51 @@ Future<void> _selectDate(BuildContext context, StateSetter setState) async {
     if (picked != null && picked != selectedDate) {
       setState(() { 
         selectedDate = picked;
-        dateInputController.text = DateFormat('yyyy-MM-dd').format(picked);
+        dateInputController!.text = DateFormat('yyyy-MM-dd').format(picked);
       });
     }
   }
 
 
-// Future _pickImage(BuildContext context, TextEditingController picturePathController, StateSetter setState) async {
+// Future _pickImage(BuildContext context) async {
 //   final ImagePicker _picker = ImagePicker();
 //   final image = await _picker.pickImage(source: ImageSource.gallery);
 
 //   if (image != null) {
-//     setState(() {
-//       _pickedImage = image;
-//       picturePathController.text = image.path;
-//     });
 //     return image;
 //   } else {
 //     print("No image selected.");
 //   }
 // }
 
-// Future<void> _uploadImage (XFile image, BuildContext context) async {
-// final File file = File(image.path);
+Future<void> _uploadImage (File file, BuildContext context) async {
 
-// // final size = ImageSizeGetter.getSize(FileInput(file));
 
-// final size = file.lengthSync();
+// final file = processImageData(imageBytes);
 
-// final xFile = XFile(image!.path);
+// final size = ImageSizeGetter.getSize(FileInput(file));
 
-// final awsFile = AWSFile.fromStream(xFile.openRead(), size: size);
+final size = file.lengthSync();
 
-//   try {
-//     final key = 'uploaded-images/${DateTime.now().millisecondsSinceEpoch}-${(image.path)}';
-//     await Amplify.Storage.uploadFile(
-//       localFile: awsFile,
-//       key: key,
-//       onProgress: (progress) {
-//         print('Upload Progress: ${progress.fractionCompleted}');
-//       }
-//     );
-//     print('Successfully uploaded file: $key');
+XFile xFile = XFile(file.path);
 
-//     // Optionally update any UI components or state after successful upload
-//   } catch (e) {
-//     print("Failed to upload image: $e");
-//   }
-// }
+final awsFile = AWSFile.fromStream(xFile.openRead(), size: size);
+
+  try {
+final key = 'uploaded-images${file.path}';
+    await Amplify.Storage.uploadFile(
+      localFile: awsFile,
+      key: key,
+      onProgress: (progress) {
+        print('Upload Progress: ${progress.fractionCompleted}');
+      }
+    );
+    print('Successfully uploaded file: $key');
+
+  } catch (e) {
+    print("Failed to upload image: $e");
+  }
+}
 
 void _navigateToContactDetailsPage(BuildContext context, Contact contact) {
   Navigator.of(context).push(MaterialPageRoute(
@@ -350,6 +359,14 @@ void _navigateToContactDetailsPage(BuildContext context, Contact contact) {
   ));
 }
 
+
+Future<File> createFileFromBytes(Uint8List bytes) async {
+  final directory = await getTemporaryDirectory();
+  final path = '${directory.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+  final file = File(path);
+  await file.writeAsBytes(bytes);
+  return file;
+}
 
 
 

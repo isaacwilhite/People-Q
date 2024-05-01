@@ -15,11 +15,13 @@ import './services/page_navigation_controller.dart';
 import "amplifyconfiguration.dart";
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _configureAmplify();
+  await dotenv.load();
   runApp(MyApp());
 }
 
