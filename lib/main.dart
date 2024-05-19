@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:people_q/screens/signin_screen.dart';
 import 'package:people_q/screens/signup.dart';
 import 'package:people_q/screens/signup_screen.dart';
+import 'package:people_q/screens/peeple_pond.dart';
 import 'db/database.dart';
 import 'screens/home.dart';
 import './services/auth_services.dart';
@@ -45,11 +46,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: CheckAuth(), 
+      home: CheckAuth(),
       routes: {
         '/home': (context) => HomePage(),
         '/signup': (context) => SignUpScreen(),
-        '/signin': (context) => SignInScreen()
+        '/signin': (context) => SignInScreen(),
       },
     );
   }
@@ -71,14 +72,13 @@ class _CheckAuthState extends State<CheckAuth> {
     try {
       final session = await Amplify.Auth.fetchAuthSession();
       if (session.isSignedIn) {
-        print(Amplify.Auth);
         Navigator.pushReplacementNamed(context, '/home');
       } else {
-        Navigator.pushReplacementNamed(context, '/signup');
+        Navigator.pushReplacementNamed(context, '/signin');
       }
     } catch (e) {
       print("Error getting sign-in status: $e");
-      Navigator.pushReplacementNamed(context, '/signup');
+      Navigator.pushReplacementNamed(context, '/signin');
     }
   }
 

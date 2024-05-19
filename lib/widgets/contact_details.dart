@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../db/models/contact.dart';
+import 'package:people_q/db/models/contact.dart';
 
 class ContactDetailsPage extends StatelessWidget {
   final Contact contact;
 
-  const ContactDetailsPage({Key? key, required this.contact}) : super(key: key);
+  ContactDetailsPage({required this.contact});
 
   @override
   Widget build(BuildContext context) {
@@ -16,26 +16,20 @@ class ContactDetailsPage extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              'Name: ${contact.name}',
-              style: TextStyle(fontSize: 20),
+          children: [
+            CircleAvatar(
+              radius: 50,
+              backgroundImage: contact.picturePath.isNotEmpty ? NetworkImage('https://image-bucket4c010-dev.s3.us-east-2.amazonaws.com/public/${contact.picturePath}') : null,
+              child: contact.picturePath.isEmpty ? Icon(Icons.person, size: 50) : null,
             ),
-            SizedBox(height: 10),
-            Text(
-              'Phone Number: ${contact.phoneNumber}',
-              style: TextStyle(fontSize: 20),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Birthday: ${contact.birthday}',
-              style: TextStyle(fontSize: 20),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Bio: ${contact.bio}',
-              style: TextStyle(fontSize: 20),
-            ),
+            SizedBox(height: 16),
+            Text('Name: ${contact.name}', style: TextStyle(fontSize: 20)),
+            SizedBox(height: 8),
+            Text('Phone: ${contact.phoneNumber}', style: TextStyle(fontSize: 20)),
+            SizedBox(height: 8),
+            Text('Bio: ${contact.bio}', style: TextStyle(fontSize: 20)),
+            SizedBox(height: 8),
+            Text('Birthday: ${contact.birthday.toLocal()}'.split(' ')[0], style: TextStyle(fontSize: 20)),
           ],
         ),
       ),
