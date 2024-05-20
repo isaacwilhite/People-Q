@@ -7,7 +7,6 @@ import 'package:people_q/screens/peeple_pond.dart';
 import 'db/database.dart';
 import 'screens/home.dart';
 import './services/auth_services.dart';
-import './widgets/date_page.dart';
 import 'package:rxdart/rxdart.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
@@ -17,7 +16,6 @@ import "amplifyconfiguration.dart";
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -90,63 +88,3 @@ class _CheckAuthState extends State<CheckAuth> {
     );
   }
 }
-// void main() async {
-//   Provider.debugCheckInvalidValueType = null;
-//   WidgetsFlutterBinding.ensureInitialized();
-//   runApp(
-//     ChangeNotifierProvider(
-//       create: (context) => PageController(),
-//       child: ListenableProvider<PageController>.value(
-//         value: PageController(initialPage: 0),
-//         child: MyApp(),
-//     ),
-//   )
-//   );
-// }
-
-
-// class MyApp extends StatefulWidget {
-//   @override
-//   _MyAppState createState() => _MyAppState();
-// }
-
-// class _MyAppState extends State<MyApp> {
-//   late bool _isUserLoggedIn = false;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     checkSignInStatus();
-//   }
-
-// void checkSignInStatus() async {
-//   try {
-//     final session = await Amplify.Auth.fetchAuthSession();
-//     final isSignedIn = session.isSignedIn;
-//     if (isSignedIn) {
-//       // User is signed in; navigate to the home page
-//       Navigator.pushReplacementNamed(context, '/home');
-//     } else {
-//       // User is not signed in; stay on or navigate to the sign-in page
-//     }
-//   } catch (e) {
-//     print("Error checking sign-in status: $e");
-//   }
-// }
-
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       home: Scaffold(
-//         body: PageView(
-//           physics: NeverScrollableScrollPhysics(), // Prevent manual swiping
-//           controller: PageController(initialPage: _isUserLoggedIn ? 1 : 0), // Adjust based on sign-in status
-//           children: [
-//             SignUpScreen(), // Assuming this is your sign-up screen
-//             HomePage(), // Assuming this is your main content page after sign-in//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }

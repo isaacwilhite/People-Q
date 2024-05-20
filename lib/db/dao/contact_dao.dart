@@ -14,11 +14,21 @@ class ContactDAO {
     var response = await http.get(Uri.parse("$apiUrl/contacts/$userId"));
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
-      print(body);
       List<Contact> contacts = body.map((dynamic item) => Contact.fromMap(item)).toList();
       return contacts;
     } else {
       throw Exception("Failed to load contacts");
+    }
+  }
+
+    Future<List<Contact>> fetchContactsByEventDate(String eventDate) async {
+    var response = await http.get(Uri.parse("$apiUrl/contactsByEventDate?eventDate=$eventDate"));
+    if (response.statusCode == 200) {
+      List<dynamic> body = jsonDecode(response.body);
+      List<Contact> contacts = body.map((dynamic item) => Contact.fromMap(item)).toList();
+      return contacts;
+    } else {
+      throw Exception("Failed to load contacts for event date");
     }
   }
 
@@ -36,56 +46,7 @@ class ContactDAO {
       }),
     );
     if (response.statusCode != 200) {
-      print(contact);
       throw Exception("Failed to insert contact");
     }
   }
 }
-
-
-
-// class ContactDao {
-//   Future<int> insertContact(Contact contact) async {
-
-// }
-
-//   Future<List<Contact>> getContacts() async {
-//     final db = await DatabaseProvider.db.database;
-//     final List<Map<String, dynamic>> maps = await db.query('contacts');
-//     return List.generate(maps.length, (i) {
-//       return Contact.fromMap(maps[i]);
-//     });
-//   }
-
-//   Future<void> updateContact(Contact contact) async {
-//     final db = await DatabaseProvider.db.database;
-//     await db.update(
-//       'contacts',
-//       contact.toMap(),
-//       where: 'id = ?',
-//       whereArgs: [contact.id],
-//     );
-//   }
-
-//   Future<void> deleteContact(int id) async {
-//     final db = await DatabaseProvider.db.database;
-//     await db.delete(
-//       'contacts',
-//       where: 'id = ?',
-//       whereArgs: [id],
-//     );
-//   }
-// }
-
-//   Future<List<Contact>> getContactsForEventDate(String date) async {
-//     final db = await DatabaseProvider.db.database;
-//     final List<Map<String, dynamic>> maps = await db.rawQuery(
-//       'SELECT contacts.* FROM contacts '
-//       'JOIN events ON contacts.id = events.contactId '
-//       'WHERE events.eventDate = ?',
-//       [date] // Ensure the date is in the correct format ('YYYY-MM-DD')
-//     );
-//     return List.generate(maps.length, (i) {
-//       return Contact.fromMap(maps[i]);
-//     });
-//   }
