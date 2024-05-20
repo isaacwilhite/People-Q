@@ -1,178 +1,69 @@
+import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
-import '../db/models/contact.dart';
-import '../screens/week_view_screen.dart';
-import '../services/page_navigation_controller.dart';
+import 'package:people_q/db/models/contact.dart';
 
-
-class ContactTile extends StatelessWidget {
+class ContactBubble extends StatefulWidget {
   final Contact contact;
-  // final PageController pageController;
-  final Function(DragUpdateDetails) onDragUpdate;
+  final double initialSize;
+  final Function(Contact) onTap;
 
-  ContactTile({Key? key, required this.contact, required this.onDragUpdate}) : super(key: key);
+  ContactBubble({required this.contact, required this.initialSize, required this.onTap});
+
+  @override
+  _ContactBubbleState createState() => _ContactBubbleState();
+}
+
+class _ContactBubbleState extends State<ContactBubble> {
+  late double size;
+  late double top;
+  late double left;
+
+  @override
+  void initState() {
+    super.initState();
+    size = widget.initialSize;
+    final random = Random();
+    top = random.nextDouble() * 300;
+    left = random.nextDouble() * 300;
+    _startAnimation();
+  }
+
+  void _startAnimation() {
+    Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        final random = Random();
+        size = 40 + random.nextDouble() * 40;
+        top = random.nextDouble() * 300;
+        left = random.nextDouble() * 300;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return LongPressDraggable<Contact>(
-      data: contact,
-      feedback: Material(
-        child: SizedBox(width: 200, height: 60, child: ContactTile(contact: contact, onDragUpdate: onDragUpdate,)),
-        elevation: 4.0,
-      ),
-      onDragUpdate: onDragUpdate,
-      child: ListTile(
-        leading: CircleAvatar(
-          child: Text(contact.name[0]), 
+    return AnimatedPositioned(
+      duration: Duration(milliseconds: 1000),
+      top: top,
+      left: left,
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 1000),
+        width: size,
+        height: size,
+        child: GestureDetector(
+          onTap: () => widget.onTap(widget.contact),
+          child: CircleAvatar(
+            radius: size / 2,
+            backgroundColor: Colors.grey.shade200,
+            backgroundImage: widget.contact.picturePath.isNotEmpty
+                ? NetworkImage(widget.contact.picturePath)
+                : null,
+            child: widget.contact.picturePath.isEmpty
+                ? Icon(Icons.person, size: size / 2)
+                : null,
+          ),
         ),
-        title: Text(contact.name),
-        subtitle: Text(contact.phoneNumber),
       ),
     );
   }
 }
-
-// class CustomDraggableTile extends StatefulWidget {
-//   final Contact contact;
-
-//   const CustomDraggableTile({Key? key, required this.contact}) : super(key: key);
-
-//   @override
-//   _CustomDraggableTileState createState() => _CustomDraggableTileState();
-// }
-
-// class _CustomDraggableTileState extends State<CustomDraggableTile> {
-//   OverlayEntry? _floatingTile;
-//   final LayerLink _layerLink = LayerLink();
-//   Offset _offset = Offset.zero;
-
-//   void _showFloatingTile(BuildContext context, Offset startPosition) {
-//     _floatingTile = OverlayEntry(
-//       builder: (context) {
-//         return Positioned(
-//           left: startPosition.dx + _offset.dx - 75,
-//           top: startPosition.dy + _offset.dy - 25,
-//           child: CompositedTransformFollower(
-//             link: _layerLink,
-//             showWhenUnlinked: false,
-//             offset: _offset,
-//             child: Material(
-//               elevation: 6,
-//               child: SizedBox(
-//                 width: 150,
-//                 height: 50,
-//                 child: Card(
-//                   child: ListTile(
-//                     leading: Icon(Icons.person),
-//                     title: Text(widget.contact.name),
-//                   ),
-//                 ),
-//               ),
-//             ),
-//           ),
-//         );
-//       },
-//     );
-
-//     Overlay.of(context)!.insert(_floatingTile!);
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return CompositedTransformTarget(
-//       link: _layerLink,
-//       child: GestureDetector(
-//         onLongPressStart: (details) {
-//           _offset = Offset.zero; // Reset offset
-//           _showFloatingTile(context, details.globalPosition);
-//         },
-//         onPanUpdate: (details) {
-//           setState(() {
-//             _offset += details.delta;
-//           });
-//           // Update the position dynamically
-//           _floatingTile?.markNeedsBuild();
-//         },
-//         onPanEnd: (details) {
-//           _removeFloatingTile();
-//         },
-//         child: Card(
-//           child: ListTile(
-//             leading: Icon(Icons.person),
-//             title: Text(widget.contact.name),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-
-//   void _removeFloatingTile() {
-//     _floatingTile?.remove();
-//     _floatingTile = null;
-//   }
-// }
-
-
-
-
-
-
-// class ContactTile extends StatefulWidget {
-//   final Contact contact;
-
-//   const ContactTile({Key? key, required this.contact}) : super(key: key);
-
-//   @override
-//   _ContactTileState createState() => _ContactTileState();
-// }
-
-// class _ContactTileState extends State<ContactTile> {
-//   Offset _dragOffset = Offset.zero; // To track the drag position
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return GestureDetector(
-//       onPanUpdate: (details) {
-//         setState(() {
-//           _dragOffset += details.delta;
-//         });
-//           print('dragging');
-//         // Implement edge detection logic here
-//         final screenSize = MediaQuery.of(context).size;
-//         if (_dragOffset.dx > screenSize.width - 100) { // Example edge detection logic
-//           // Trigger navigation or other action
-//           print("navigate to week view");
-//           Navigator.push(context, MaterialPageRoute(builder: (context) => WeekView()));
-//         }
-//       },
-//       onPanEnd: (details) {
-//         // Reset the drag offset to prevent accidental triggers when starting a new drag
-//         setState(() {
-//           _dragOffset = Offset.zero;
-//         });
-//       },
-//       child: LongPressDraggable<Contact>(
-//         data: widget.contact,
-//         feedback: Material(
-//           child: SizedBox(
-//             width: 300,
-//             height: 75,
-//             child: Card(
-//               child: ListTile(
-//                 leading: Icon(Icons.person),
-//                 title: Text(widget.contact.name),
-//               ),
-//             ),
-//           ),
-//           elevation: 4.0,
-//         ),
-//         child: Card(
-//           child: ListTile(
-//             leading: Icon(Icons.person),
-//             title: Text(widget.contact.name),
-//           ),
-//         ),
-//         childWhenDragging: Container(),
-//       ),
-//     );
-//   }
-// }

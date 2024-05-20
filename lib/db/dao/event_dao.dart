@@ -1,68 +1,28 @@
 import 'package:intl/intl.dart';
-// import 'package:sqflite/sqflite.dart';
 import '../models/event.dart';
 import '../models/contact.dart';
 import '../database.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-// class EventDao {
-//   Future<void> insertEvent(Event event) async{
-//     final db = await DatabaseProvider.db.database;
-//     final map = event.toMap();
 
-//   await db.insert('events', map, conflictAlgorithm: ConflictAlgorithm.replace);
-// }
-//     Future<List<Event>> getEvents() async {
-//     final db = await DatabaseProvider.db.database;
-//     final List<Map<String, dynamic>> maps = await db.query('events');
-//     return List.generate(maps.length, (i) {
-//       return Event.fromMap(maps[i]);
-//     });
-//   }
+class EventDao {
+final String apiUrl = "https://ahqampwcz1.execute-api.us-east-2.amazonaws.com/dev";
+  Future<void> insertEvent(Event event) async {
+    var response = await http.post(
+      Uri.parse("$apiUrl/events"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        'eventId': event.eventId,
+        'contactId': event.contactId,
+        'eventDate': event.eventDate,
+        'description': event.description,
+      }),
+    );
 
-//   Future<List<Event>> getEventsByContact(int contactId) async {
-//   final db = await DatabaseProvider.db.database;
-//   final List<Map<String, dynamic>> maps = await db.query(
-//     'events',
-//     where: 'contactId = ?',
-//     whereArgs: [contactId],
-//   );
+    if (response.statusCode != 200) {
+      throw Exception("Failed to insert event");
+    }
+  }
 
-  
-
-//   return List.generate(maps.length, (i) {
-//     return Event.fromMap(maps[i]);
-//   });
-// }
-
-//   Future<List<Contact>> getContactsFoEventDate(String date) async {
-//     final db = await DatabaseProvider.db.database;
-//     final List<Map<String, dynamic>> maps = await db.rawQuery(
-//       'SELECT contacts.* FROM contacts '
-//       'JOIN events ON contacts.id = events.contactId '
-//       'WHERE events.eventDate = ?',
-//       [date] // ('YYYY-MM-DD')
-//     );
-//     return List.generate(maps.length, (i) {
-//       return Contact.fromMap(maps[i]);
-//     });
-//   }
-
-//   Future<void> updateEvent(Event event) async {
-//     final db = await DatabaseProvider.db.database;
-//     await db.update(
-//       'events',
-//       event.toMap(),
-//       where: 'id = ?',
-//       whereArgs: [event.eventId],
-//     );
-//   }
-
-//   Future<void> deleteEvent(int eventId) async {
-//     final db = await DatabaseProvider.db.database;
-//     await db.delete(
-//       'events',
-//       where: 'eventId = ?',
-//       whereArgs: [eventId],
-//     );
-//   }
-// }
+}
