@@ -2,8 +2,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:people_q/db/models/contact.dart';
 import 'package:people_q/widgets/contact_details.dart';
+import 'package:people_q/utils/global_drag.dart';  // Import the global drag handler
 
-class ContactsPage extends StatelessWidget {
+class ContactsPage extends StatefulWidget {
   final Future<List<Contact>>? contactsFuture;
   final Function(Contact) onContactDropped;
   final PageController pageController;
@@ -15,13 +16,42 @@ class ContactsPage extends StatelessWidget {
   });
 
   @override
+  _ContactsPageState createState() => _ContactsPageState();
+}
+
+class _ContactsPageState extends State<ContactsPage> {
+  final GlobalDragHandler _globalDragHandler = GlobalDragHandler();
+
+  @override
+  void initState() {
+    super.initState();
+    _globalDragHandler.setContext(context);
+  }
+
+  @override
+  void dispose() {
+    _globalDragHandler.clearContext();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Contacts'),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(
+              'Peeple Pond',
+              style: TextStyle(
+                fontSize: 36, // Set the desired font size
+              ),
+            ),
+          ],
+        ),
       ),
       body: FutureBuilder<List<Contact>>(
-        future: contactsFuture,
+        future: widget.contactsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -30,19 +60,22 @@ class ContactsPage extends StatelessWidget {
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(child: Text('No contacts found'));
           } else {
-            return Container(
-              padding: EdgeInsets.all(8.0),
-              child: CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: SizedBox(
-                      height: MediaQuery.of(context).size.height * 2, // Allow scrolling
-                      child: Stack(
-                        children: _buildContactBubbles(context, snapshot.data!),
+            return GestureDetector(
+              onHorizontalDragUpdate: _globalDragHandler.handleDragUpdate,
+              child: Container(
+                padding: EdgeInsets.all(8.0),
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: SizedBox(
+                        height: MediaQuery.of(context).size.height * 2,
+                        child: Stack(
+                          children: _buildContactBubbles(context, snapshot.data!),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           }
@@ -61,7 +94,7 @@ class ContactsPage extends StatelessWidget {
     double yOffset = 0;
     double rowHeight = 0;
     double totalRowWidth = 0;
-    double horizontalMargin = 20.0; // Margin from screen edges
+    double horizontalMargin = 5.0; // Margin from screen edges
     List<Widget> rowBubbles = [];
 
     for (var contact in contacts) {
@@ -108,68 +141,15 @@ class ContactsPage extends StatelessWidget {
 
       String imageUrl = 'https://image-bucket4c010-dev.s3.us-east-2.amazonaws.com/public/${contact.picturePath}';
 
-       rowBubbles.add(
+      rowBubbles.add(
         Positioned(
           top: top,
           left: left,
-          child: Draggable<Contact>(
-            data: contact,
-            feedback: Material(
-              color: Colors.transparent,
-              child: CircleAvatar(
-                radius: radius,
-                backgroundColor: Colors.grey.shade200,
-                backgroundImage: contact.picturePath.isNotEmpty ? NetworkImage(imageUrl) : null,
-                child: contact.picturePath.isEmpty ? Icon(Icons.person, size: radius) : null,
-              ),
-            ),
-            childWhenDragging: Container(),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ContactDetailsPage(contact: contact),
-                  ),
-                );
-              },
-              child: CircleAvatar(
-                radius: radius,
-                backgroundColor: Colors.grey.shade200,
-                backgroundImage: contact.picturePath.isNotEmpty ? NetworkImage(imageUrl) : null,
-                child: contact.picturePath.isEmpty ? Icon(Icons.person, size: radius) : null,
-              ),
-            ),
-            onDragStarted: () {
-              print('Dragging ${contact.name}');
-            },
-            onDragUpdate: (details) {
-              final screenSize = MediaQuery.of(context).size;
-              final edgeMargin = 80.0;
-
-              if (details.globalPosition.dx > screenSize.width - edgeMargin) {
-                if (pageController.page == 0) {
-                  pageController.jumpToPage(8); // Navigate to today's date
-                } else {
-                  pageController.nextPage(
-                    duration: Duration(milliseconds: 300),
-                    curve: Curves.ease,
-                  );
-                }
-              } else if (details.globalPosition.dx < edgeMargin) {
-                pageController.previousPage(
-                  duration: Duration(milliseconds: 300),
-                  curve: Curves.ease,
-                );
-              }
-            },
-            onDragEnd: (details) {
-              // Triggered when the drag ends, handle the logic if needed.
-            },
-          ),
+          child: _buildDraggableContact(context, contact, radius, imageUrl),
         ),
       );
     }
+
     // Center the last row
     double startX = (screenWidth - totalRowWidth) / 2 + horizontalMargin;
     for (var bubble in rowBubbles) {
@@ -182,5 +162,68 @@ class ContactsPage extends StatelessWidget {
     }
 
     return bubbles;
+  }
+
+ Widget _buildDraggableContact(BuildContext context, Contact contact, double radius, String imageUrl) {
+  return LongPressDraggable<Contact>(
+    data: contact,
+    feedback: Material(
+      color: Colors.transparent,
+      child: CircleAvatar(
+        radius: radius,
+        backgroundColor: Colors.grey.shade200,
+        backgroundImage: contact.picturePath.isNotEmpty ? NetworkImage(imageUrl) : null,
+        child: contact.picturePath.isEmpty ? Icon(Icons.person, size: radius) : null,
+      ),
+    ),
+    childWhenDragging: Container(),
+    child: GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (BuildContext context) {
+            return DraggableScrollableSheet(
+              expand: false,
+              initialChildSize: 0.85,
+              maxChildSize: 0.95,
+              minChildSize: 0.3,
+              builder: (BuildContext context, ScrollController scrollController) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    child: ContactDetailsPage(contact: contact),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+        child: CircleAvatar(
+          radius: radius,
+          backgroundColor: Colors.grey.shade200,
+          backgroundImage: contact.picturePath.isNotEmpty ? NetworkImage(imageUrl) : null,
+          child: contact.picturePath.isEmpty ? Icon(Icons.person, size: radius) : null,
+        ),
+      ),
+      onDragStarted: () {
+        _globalDragHandler.setContext(context);
+      },
+      onDragUpdate: (details) {
+        _globalDragHandler.handleDragUpdate(details);
+      },
+      onDragEnd: (details) {
+        _globalDragHandler.clearContext();
+      },
+    );
   }
 }

@@ -16,6 +16,7 @@ import "amplifyconfiguration.dart";
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:people_q/widgets/splash_screen.dart'; 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,11 +41,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'PEEPLE Q',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: CheckAuth(),
+      home: LoadingApp(),  // Use LoadingApp to handle splash screen and auth check
       routes: {
         '/home': (context) => HomePage(),
         '/signup': (context) => SignUpScreen(),
@@ -54,15 +55,23 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class CheckAuth extends StatefulWidget {
+class LoadingApp extends StatefulWidget {
   @override
-  _CheckAuthState createState() => _CheckAuthState();
+  _LoadingAppState createState() => _LoadingAppState();
 }
 
-class _CheckAuthState extends State<CheckAuth> {
+class _LoadingAppState extends State<LoadingApp> {
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
+    _loadApp();
+  }
+
+  Future<void> _loadApp() async {
+    // Simulate some loading time
+    await Future.delayed(Duration(seconds: 2));  // Adjust this as needed
     _checkAuthStatus();
   }
 
@@ -82,9 +91,6 @@ class _CheckAuthState extends State<CheckAuth> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.center,
-      child: CircularProgressIndicator(),
-    );
+    return _isLoading ? SplashScreen() : Container();  // Show splash screen while loading
   }
 }
