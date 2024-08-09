@@ -9,11 +9,15 @@ import 'dart:convert';
 class EventDao {
 final String apiUrl = "https://ahqampwcz1.execute-api.us-east-2.amazonaws.com/dev";
   Future<void> insertEvent(Event event) async {
+    print(jsonEncode({
+        'contactId': event.contactId,
+        'eventDate': event.eventDate,
+        'description': event.description,
+      }));
     var response = await http.post(
       Uri.parse("$apiUrl/events"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
-        'eventId': event.eventId,
         'contactId': event.contactId,
         'eventDate': event.eventDate,
         'description': event.description,
