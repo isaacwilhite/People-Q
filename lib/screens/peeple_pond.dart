@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:people_q/db/models/contact.dart';
 import 'package:people_q/widgets/contact_details.dart';
-import 'package:people_q/utils/global_drag.dart';  // Import the global drag handler
+import 'package:people_q/utils/global_drag.dart';  
 
 class ContactsPage extends StatefulWidget {
   final Future<List<Contact>>? contactsFuture;
@@ -34,7 +34,7 @@ class _ContactsPageState extends State<ContactsPage> {
     super.dispose();
   }
 
-  @override
+ @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -43,9 +43,7 @@ class _ContactsPageState extends State<ContactsPage> {
           children: [
             Text(
               'Peeple Pond',
-              style: TextStyle(
-                fontSize: 36, // Set the desired font size
-              ),
+              style: TextStyle(fontSize: 36),
             ),
           ],
         ),
@@ -61,7 +59,14 @@ class _ContactsPageState extends State<ContactsPage> {
             return Center(child: Text('No contacts found'));
           } else {
             return GestureDetector(
-              onHorizontalDragUpdate: _globalDragHandler.handleDragUpdate,
+              onHorizontalDragUpdate: (details) {
+                _globalDragHandler.handleDragUpdate(details);
+                setState(() {}); 
+              },
+              onHorizontalDragEnd: (details) {
+                _globalDragHandler.clearContext();
+                setState(() {}); 
+              },
               child: Container(
                 padding: EdgeInsets.all(8.0),
                 child: CustomScrollView(
@@ -84,6 +89,7 @@ class _ContactsPageState extends State<ContactsPage> {
     );
   }
 
+
   List<Widget> _buildContactBubbles(BuildContext context, List<Contact> contacts) {
     final List<Widget> bubbles = [];
     final random = Random();
@@ -94,15 +100,14 @@ class _ContactsPageState extends State<ContactsPage> {
     double yOffset = 0;
     double rowHeight = 0;
     double totalRowWidth = 0;
-    double horizontalMargin = 5.0; // Margin from screen edges
+    double horizontalMargin = 5.0; 
     List<Widget> rowBubbles = [];
 
     for (var contact in contacts) {
-      double size = random.nextDouble() * 60 + 80; // Radius range 60 to 120
+      double size = random.nextDouble() * 60 + 80; 
       double radius = size / 2;
 
       if (xOffset + size > screenWidth - 2 * horizontalMargin) {
-        // Center the row
         double startX = (screenWidth - totalRowWidth) / 2 + horizontalMargin;
         for (var bubble in rowBubbles) {
           Positioned positionedBubble = bubble as Positioned;
@@ -113,31 +118,29 @@ class _ContactsPageState extends State<ContactsPage> {
           ));
         }
 
-        // Move to the next row
+
         rowBubbles.clear();
         xOffset = 0;
-        yOffset += rowHeight + 40; // Add spacing between rows
+        yOffset += rowHeight + 40; 
         rowHeight = 0;
         totalRowWidth = 0;
       }
 
       if (yOffset + size > screenHeight * 2) {
-        // If the screen is filled, stop adding more bubbles
         break;
       }
 
       rowHeight = max(rowHeight, size);
-      totalRowWidth += size + 40; // Include spacing between bubbles
+      totalRowWidth += size + 40;
 
-      double topVariation = random.nextDouble() * (rowHeight / 2); // Variation in vertical placement
+      double topVariation = random.nextDouble() * (rowHeight / 2);
       double top = yOffset + topVariation;
       double left = xOffset + random.nextDouble() * (screenWidth / 4 - size);
 
-      // Ensure the bubble doesn't touch the edges
       left = max(horizontalMargin, left);
       left = min(screenWidth - horizontalMargin - size, left);
 
-      xOffset += size + 40; // Move xOffset for the next bubble
+      xOffset += size + 40; 
 
       String imageUrl = 'https://image-bucket4c010-dev.s3.us-east-2.amazonaws.com/public/${contact.picturePath}';
 
@@ -150,7 +153,6 @@ class _ContactsPageState extends State<ContactsPage> {
       );
     }
 
-    // Center the last row
     double startX = (screenWidth - totalRowWidth) / 2 + horizontalMargin;
     for (var bubble in rowBubbles) {
       Positioned positionedBubble = bubble as Positioned;

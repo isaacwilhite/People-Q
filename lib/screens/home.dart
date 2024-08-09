@@ -14,7 +14,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'package:people_q/utils/global_drag.dart';  // Import the global drag handler
+import 'package:people_q/utils/global_drag.dart'; 
 
 class HomePage extends StatefulWidget {
   @override
@@ -105,7 +105,7 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () async {
                   await _submitEvent(contact, date);
                   Navigator.pop(context);
-                  setState(() {}); // Trigger refresh of the date page
+                  setState(() {});
                 },
                 child: Text('Submit'),
               ),
@@ -285,15 +285,15 @@ class _HomePageState extends State<HomePage> {
     double yOffset = 0;
     double rowHeight = 0;
     double totalRowWidth = 0;
-    double horizontalMargin = 20.0; // Margin from screen edges
+    double horizontalMargin = 20.0; 
     List<Widget> rowBubbles = [];
 
     for (var contact in contacts) {
-      double size = random.nextDouble() * 60 + 80; // Radius range 60 to 120
+      double size = random.nextDouble() * 60 + 80; 
       double radius = size / 2;
 
       if (xOffset + size > screenWidth - 2 * horizontalMargin) {
-        // Center the row
+        
         double startX = (screenWidth - totalRowWidth) / 2 + horizontalMargin;
         for (var bubble in rowBubbles) {
           Positioned positionedBubble = bubble as Positioned;
@@ -304,31 +304,30 @@ class _HomePageState extends State<HomePage> {
           ));
         }
 
-        // Move to the next row
+        
         rowBubbles.clear();
         xOffset = 0;
-        yOffset += rowHeight + 40; // Add spacing between rows
+        yOffset += rowHeight + 40; 
         rowHeight = 0;
         totalRowWidth = 0;
       }
 
       if (yOffset + size > screenHeight * 2) {
-        // If the screen is filled, stop adding more bubbles
         break;
       }
 
       rowHeight = max(rowHeight, size);
-      totalRowWidth += size + 40; // Include spacing between bubbles
+      totalRowWidth += size + 40; 
 
-      double topVariation = random.nextDouble() * (rowHeight / 2); // Variation in vertical placement
+      double topVariation = random.nextDouble() * (rowHeight / 2); 
       double top = yOffset + topVariation;
       double left = xOffset + random.nextDouble() * (screenWidth / 4 - size);
 
-      // Ensure the bubble doesn't touch the edges
+      
       left = max(horizontalMargin, left);
       left = min(screenWidth - horizontalMargin - size, left);
 
-      xOffset += size + 40; // Move xOffset for the next bubble
+      xOffset += size + 40; 
 
       String imageUrl = 'https://image-bucket4c010-dev.s3.us-east-2.amazonaws.com/public/${contact.picturePath}';
 
@@ -399,7 +398,7 @@ class _HomePageState extends State<HomePage> {
         ),
       );
     }
-    // Center the last row
+    
     double startX = (screenWidth - totalRowWidth) / 2 + horizontalMargin;
     for (var bubble in rowBubbles) {
       Positioned positionedBubble = bubble as Positioned;
@@ -559,7 +558,7 @@ class _HomePageState extends State<HomePage> {
         );
       },
     ).whenComplete(() {
-      clearTextFields(); // Clear fields when modal is closed
+      clearTextFields(); 
     });
   }
 
