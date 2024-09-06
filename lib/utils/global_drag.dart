@@ -13,20 +13,15 @@ class GlobalDragHandler {
 
   void handleDragUpdate(DragUpdateDetails details) {
     _dragPosition = details.globalPosition;
-    print("_dragPosition: ${_dragPosition}");
     _handlePageNavigation();
   }
 
   void _handlePageNavigation() {
     if (_dragPosition != null && _context != null) {
-      print("_dragPosition != null && _context != null");
       final screenSize = MediaQuery.of(_context!).size;
       final edgeMargin = 80.0;
-
       if (_dragPosition!.dx > screenSize.width - edgeMargin) {
-        print("_dragPosition!.dx > screenSize.width - edgeMargin");
         if (!_isDragging) {
-          print("!_isDragging");
           _isDragging = true;
           pageController
               .nextPage(
@@ -36,9 +31,7 @@ class GlobalDragHandler {
               .then((_) => _isDragging = false);
         }
       } else if (_dragPosition!.dx < edgeMargin) {
-        print("_dragPosition!.dx < edgeMargin");
         if (!_isDragging) {
-          print("!_isDragging");
           _isDragging = true;
           pageController
               .previousPage(

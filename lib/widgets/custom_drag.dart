@@ -84,7 +84,7 @@ typedef DragTargetMove<T> = void Function(DragTargetDetails<T> details);
 ///  * [pointerDragAnchorStrategy], which displays the feedback anchored at the
 ///    position of the touch that started the drag.
 typedef DragAnchorStrategy = Offset Function(
-    Draggable<Object> draggable, BuildContext context, Offset position);
+    CustomDraggable<Object> draggable, BuildContext context, Offset position);
 
 /// Display the feedback anchored at the position of the original child.
 ///
@@ -98,7 +98,7 @@ typedef DragAnchorStrategy = Offset Function(
 ///  * [DragAnchorStrategy], the typedef that this function implements.
 ///  * [Draggable.dragAnchorStrategy], for which this is a built-in value.
 Offset childDragAnchorStrategy(
-    Draggable<Object> draggable, BuildContext context, Offset position) {
+    CustomDraggable<Object> draggable, BuildContext context, Offset position) {
   final RenderBox renderObject = context.findRenderObject()! as RenderBox;
   return renderObject.globalToLocal(position);
 }
@@ -121,7 +121,7 @@ Offset childDragAnchorStrategy(
 ///  * [DragAnchorStrategy], the typedef that this function implements.
 ///  * [Draggable.dragAnchorStrategy], for which this is a built-in value.
 Offset pointerDragAnchorStrategy(
-    Draggable<Object> draggable, BuildContext context, Offset position) {
+    CustomDraggable<Object> draggable, BuildContext context, Offset position) {
   return Offset.zero;
 }
 
@@ -161,11 +161,11 @@ Offset pointerDragAnchorStrategy(
 ///
 ///  * [DragTarget]
 ///  * [LongPressDraggable]
-class Draggable<T extends Object> extends StatefulWidget {
+class CustomDraggable<T extends Object> extends StatefulWidget {
   /// Creates a widget that can be dragged to a [DragTarget].
   ///
   /// If [maxSimultaneousDrags] is non-null, it must be non-negative.
-  const Draggable({
+  const CustomDraggable({
     super.key,
     required this.child,
     required this.feedback,
@@ -366,7 +366,7 @@ class Draggable<T extends Object> extends StatefulWidget {
 
   /// Creates a gesture recognizer that recognizes the start of the drag.
   ///
-  /// Subclasses can override this function to customize when they start
+  /// Subclasses can override this function to Customomize when they start
   /// recognizing a drag.
   @protected
   MultiDragGestureRecognizer createRecognizer(
@@ -388,7 +388,7 @@ class Draggable<T extends Object> extends StatefulWidget {
   }
 
   @override
-  State<Draggable<T>> createState() => _DraggableState<T>();
+  State<CustomDraggable<T>> createState() => _CustomDraggableState<T>();
 }
 
 /// Makes its child draggable starting from long press.
@@ -397,7 +397,7 @@ class Draggable<T extends Object> extends StatefulWidget {
 ///
 ///  * [Draggable], similar to the [LongPressDraggable] widget but happens immediately.
 ///  * [DragTarget], a widget that receives data when a [Draggable] widget is dropped.
-class LongPressDraggable<T extends Object> extends Draggable<T> {
+class LongPressDraggable<T extends Object> extends CustomDraggable<T> {
   /// Creates a widget that can be dragged starting from long press.
   ///
   /// If [maxSimultaneousDrags] is non-null, it must be non-negative.
@@ -446,7 +446,8 @@ class LongPressDraggable<T extends Object> extends Draggable<T> {
   }
 }
 
-class _DraggableState<T extends Object> extends State<Draggable<T>> {
+class _CustomDraggableState<T extends Object>
+    extends State<CustomDraggable<T>> {
   @override
   void initState() {
     super.initState();
@@ -516,20 +517,16 @@ class _DraggableState<T extends Object> extends State<Draggable<T>> {
       ignoringFeedbackPointer: widget.ignoringFeedbackPointer,
       viewId: View.of(context).viewId,
       onDragUpdate: (DragUpdateDetails details) {
-        if (mounted && widget.onDragUpdate != null) {
+        if (widget.onDragUpdate != null) {
           widget.onDragUpdate!(details);
         }
       },
       onDragEnd: (Velocity velocity, Offset offset, bool wasAccepted) {
-        if (mounted) {
-          setState(() {
-            _activeCount -= 1;
-          });
-        } else {
-          _activeCount -= 1;
-          _disposeRecognizerIfInactive();
-        }
-        if (mounted && widget.onDragEnd != null) {
+        //setState(() {
+        _activeCount -= 1;
+        //});
+
+        if (widget.onDragEnd != null) {
           widget.onDragEnd!(DraggableDetails(
             wasAccepted: wasAccepted,
             velocity: velocity,
@@ -619,9 +616,9 @@ class DragTargetDetails<T> {
 ///
 ///  * [Draggable]
 ///  * [LongPressDraggable]
-class DragTarget<T extends Object> extends StatefulWidget {
+class CustomDragTarget<T extends Object> extends StatefulWidget {
   /// Creates a widget that receives drags.
-  const DragTarget({
+  const CustomDragTarget({
     super.key,
     required this.builder,
     @Deprecated('Use onWillAcceptWithDetails instead. '
@@ -706,7 +703,7 @@ class DragTarget<T extends Object> extends StatefulWidget {
   final HitTestBehavior hitTestBehavior;
 
   @override
-  State<DragTarget<T>> createState() => _DragTargetState<T>();
+  State<CustomDragTarget<T>> createState() => _CustomDragTargetState<T>();
 }
 
 List<T?> _mapAvatarsToData<T extends Object>(
@@ -716,7 +713,8 @@ List<T?> _mapAvatarsToData<T extends Object>(
       .toList();
 }
 
-class _DragTargetState<T extends Object> extends State<DragTarget<T>> {
+class _CustomDragTargetState<T extends Object>
+    extends State<CustomDragTarget<T>> {
   final List<_DragAvatar<Object>> _candidateAvatars = <_DragAvatar<Object>>[];
   final List<_DragAvatar<Object>> _rejectedAvatars = <_DragAvatar<Object>>[];
 
@@ -844,9 +842,9 @@ class _DragAvatar<T extends Object> extends Drag {
   final bool ignoringFeedbackPointer;
   final int viewId;
 
-  _DragTargetState<Object>? _activeTarget;
-  final List<_DragTargetState<Object>> _enteredTargets =
-      <_DragTargetState<Object>>[];
+  _CustomDragTargetState<Object>? _activeTarget;
+  final List<_CustomDragTargetState<Object>> _enteredTargets =
+      <_CustomDragTargetState<Object>>[];
   Offset _position;
   Offset? _lastOffset;
   OverlayEntry? _entry;
@@ -878,14 +876,15 @@ class _DragAvatar<T extends Object> extends Drag {
     WidgetsBinding.instance
         .hitTestInView(result, globalPosition + feedbackOffset, viewId);
 
-    final List<_DragTargetState<Object>> targets =
+    final List<_CustomDragTargetState<Object>> targets =
         _getDragTargets(result.path).toList();
 
     bool listsMatch = false;
     if (targets.length >= _enteredTargets.length &&
         _enteredTargets.isNotEmpty) {
       listsMatch = true;
-      final Iterator<_DragTargetState<Object>> iterator = targets.iterator;
+      final Iterator<_CustomDragTargetState<Object>> iterator =
+          targets.iterator;
       for (int i = 0; i < _enteredTargets.length; i += 1) {
         iterator.moveNext();
         if (iterator.current != _enteredTargets[i]) {
@@ -897,7 +896,7 @@ class _DragAvatar<T extends Object> extends Drag {
 
     // If everything's the same, report moves, and bail early.
     if (listsMatch) {
-      for (final _DragTargetState<Object> target in _enteredTargets) {
+      for (final _CustomDragTargetState<Object> target in _enteredTargets) {
         target.didMove(this);
       }
       return;
@@ -907,9 +906,9 @@ class _DragAvatar<T extends Object> extends Drag {
     _leaveAllEntered();
 
     // Enter new targets.
-    final _DragTargetState<Object>? newTarget =
-        targets.cast<_DragTargetState<Object>?>().firstWhere(
-      (_DragTargetState<Object>? target) {
+    final _CustomDragTargetState<Object>? newTarget =
+        targets.cast<_CustomDragTargetState<Object>?>().firstWhere(
+      (_CustomDragTargetState<Object>? target) {
         if (target == null) {
           return false;
         }
@@ -920,23 +919,24 @@ class _DragAvatar<T extends Object> extends Drag {
     );
 
     // Report moves to the targets.
-    for (final _DragTargetState<Object> target in _enteredTargets) {
+    for (final _CustomDragTargetState<Object> target in _enteredTargets) {
       target.didMove(this);
     }
 
     _activeTarget = newTarget;
   }
 
-  Iterable<_DragTargetState<Object>> _getDragTargets(
+  Iterable<_CustomDragTargetState<Object>> _getDragTargets(
       Iterable<HitTestEntry> path) {
     // Look for the RenderBoxes that corresponds to the hit target (the hit target
     // widgets build RenderMetaData boxes for us for this purpose).
-    final List<_DragTargetState<Object>> targets = <_DragTargetState<Object>>[];
+    final List<_CustomDragTargetState<Object>> targets =
+        <_CustomDragTargetState<Object>>[];
     for (final HitTestEntry entry in path) {
       final HitTestTarget target = entry.target;
       if (target is RenderMetaData) {
         final dynamic metaData = target.metaData;
-        if (metaData is _DragTargetState &&
+        if (metaData is _CustomDragTargetState &&
             metaData.isExpectedDataType(data, T)) {
           targets.add(metaData);
         }

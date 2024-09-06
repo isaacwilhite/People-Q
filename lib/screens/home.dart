@@ -17,6 +17,8 @@ import 'package:people_q/screens/peeple_pond.dart';
 import 'package:people_q/utils/global_drag.dart';
 import 'package:people_q/widgets/contact_details.dart';
 
+import '../widgets/custom_drag.dart';
+
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -27,9 +29,6 @@ class _HomePageState extends State<HomePage> {
   final DateTime _today = DateTime.now();
   bool _isNavigatingToContacts = false;
   Future<List<Contact>>? _contactsFuture;
-  StreamController<bool> refreshOffStageWidget = StreamController.broadcast();
-  StreamController<bool> dragStopStream = StreamController.broadcast();
-  int maxSimultaneousDrags = 1;
 
   XFile? imageFile;
   bool isLoadingImage = false;
@@ -43,7 +42,6 @@ class _HomePageState extends State<HomePage> {
   String errorMessage = '';
   DateTime selectedDate = DateTime.now();
   TextEditingController? dateInputController;
-  Widget? offstageContactWidget;
 
   @override
   void initState() {
@@ -166,109 +164,98 @@ class _HomePageState extends State<HomePage> {
           },
         ),
       ),
-      body: Stack(
-        children: [
-          GestureDetector(
-            onHorizontalDragUpdate: _globalDragHandler.handleDragUpdate,
-            child: PageView.builder(
-              controller: _globalDragHandler.pageController,
-              onPageChanged: (int page) {
-                if (!_isNavigatingToContacts && page == 0) {
-                  _globalDragHandler.pageController.jumpToPage(8);
-                }
-                if (page == 1) {
-                  _globalDragHandler.pageController.jumpToPage(8);
-                }
-                setState(() {
-                  _isNavigatingToContacts = false;
-                });
-              },
-              itemCount: 16,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return ContactsPage(
-                    contactsFuture: _contactsFuture,
-                    onContactDropped: (contact) =>
-                        _handleContactDropped(contact, _today),
-                    pageController: _globalDragHandler.pageController,
-                  );
-                } else if (index == 1) {
-                  return Container();
-                } else {
-                  DateTime date = _today.add(Duration(days: index - 8));
-                  String formattedDate = DateFormat('yyyy-MM-dd').format(date);
-                  if (DateFormat('yyyy-MM-dd').format(date) ==
-                      DateFormat('yyyy-MM-dd').format(_today)) {
-                    formattedDate = 'Today';
-                  }
-                  Future<List<Contact>> contactsForDate =
-                      ContactDAO().fetchContactsByEventDate(formattedDate);
+      body: GestureDetector(
+        onHorizontalDragUpdate: _globalDragHandler.handleDragUpdate,
+        child: PageView.builder(
+          controller: _globalDragHandler.pageController,
+          onPageChanged: (int page) {
+            if (!_isNavigatingToContacts && page == 0) {
+              _globalDragHandler.pageController.jumpToPage(8);
+            }
+            if (page == 1) {
+              _globalDragHandler.pageController.jumpToPage(8);
+            }
+            setState(() {
+              _isNavigatingToContacts = false;
+            });
+          },
+          itemCount: 16,
+          itemBuilder: (_, index) {
+            if (index == 0) {
+              return ContactsPage(
+                contactsFuture: _contactsFuture,
+                onContactDropped: (contact) =>
+                    _handleContactDropped(contact, _today),
+                pageController: _globalDragHandler.pageController,
+              );
+            } else if (index == 1) {
+              return Container();
+            } else {
+              DateTime date = _today.add(Duration(days: index - 8));
+              String formattedDate = DateFormat('yyyy-MM-dd').format(date);
+              if (DateFormat('yyyy-MM-dd').format(date) ==
+                  DateFormat('yyyy-MM-dd').format(_today)) {
+                formattedDate = 'Today';
+              }
+              Future<List<Contact>> contactsForDate =
+                  ContactDAO().fetchContactsByEventDate(formattedDate);
 
-                  return FutureBuilder<List<Contact>>(
-                    future: contactsForDate,
-                    builder: (context, snapshot) {
-                      return Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Text(
-                              DateFormat('EEEE, MMMM d').format(date),
-                              style: TextStyle(fontSize: 24),
-                            ),
-                          ),
-                          Expanded(
-                            child: DragTarget<Contact>(
-                              onWillAccept: (data) {
-                                return true;
-                              },
-                              onAccept: (contact) {
-                                _handleContactDropped(contact, date);
-                              },
-                              builder: (
-                                BuildContext context,
-                                List<dynamic> accepted,
-                                List<dynamic> rejected,
-                              ) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Center(
-                                      child: CircularProgressIndicator());
-                                } else if (snapshot.hasError) {
-                                  return Center(
-                                      child: Text(
-                                          'Error fetching contacts for this date'));
-                                } else if (!snapshot.hasData ||
-                                    snapshot.data!.isEmpty) {
-                                  return Center(
-                                      child: Text(
-                                          'No contacts found for this date'));
-                                } else {
-                                  return ListView.builder(
-                                    itemCount: snapshot.data!.length,
-                                    itemBuilder: (context, index) {
-                                      return _buildContactBubbles(
-                                          context, snapshot.data!);
-                                    },
-                                  );
-                                }
-                              },
-                            ),
-                          ),
-                        ],
-                      );
-                    },
+              return FutureBuilder<List<Contact>>(
+                future: contactsForDate,
+                builder: (_, snapshot) {
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          DateFormat('EEEE, MMMM d').format(date),
+                          style: TextStyle(fontSize: 24),
+                        ),
+                      ),
+                      Expanded(
+                        child: CustomDragTarget<Contact>(
+                          onWillAccept: (data) {
+                            return true;
+                          },
+                          onAccept: (contact) {
+                            _handleContactDropped(contact, date);
+                          },
+                          builder: (
+                            _,
+                            List<dynamic> accepted,
+                            List<dynamic> rejected,
+                          ) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return Center(child: CircularProgressIndicator());
+                            } else if (snapshot.hasError) {
+                              return Center(
+                                  child: Text(
+                                      'Error fetching contacts for this date'));
+                            } else if (!snapshot.hasData ||
+                                snapshot.data!.isEmpty) {
+                              return Center(
+                                  child:
+                                      Text('No contacts found for this date'));
+                            } else {
+                              return ListView.builder(
+                                itemCount: snapshot.data!.length,
+                                itemBuilder: (_, index) {
+                                  return _buildContactBubbles(
+                                      context, snapshot.data!);
+                                },
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                    ],
                   );
-                }
-              },
-            ),
-          ),
-          StreamBuilder(
-            stream: refreshOffStageWidget.stream,
-            builder: (_, snapshot) => offstageContactWidget != null
-                ? offstageContactWidget!
-                : const SizedBox.shrink(),
-          ),
-        ],
+                },
+              );
+            }
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -300,81 +287,6 @@ class _HomePageState extends State<HomePage> {
       print("Failed to upload image: $e");
       throw e;
     }
-  }
-
-  void setOffSetWidget(contact, radius, imageUrl, top, left) {
-    offstageContactWidget = Positioned(
-      top: top,
-      left: left,
-      child: Draggable<Contact>(
-        data: contact,
-        feedback: Material(
-          color: Colors.transparent,
-          child: CircleAvatar(
-            radius: radius,
-            backgroundColor: Colors.grey.shade200,
-            backgroundImage:
-                contact.picturePath.isNotEmpty ? NetworkImage(imageUrl) : null,
-            child: contact.picturePath.isEmpty
-                ? Icon(Icons.person, size: radius)
-                : null,
-          ),
-        ),
-        childWhenDragging: Container(),
-        child: GestureDetector(
-          onTap: () {
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              builder: (BuildContext context) {
-                return DraggableScrollableSheet(
-                  expand: false,
-                  initialChildSize: 0.85,
-                  maxChildSize: 0.95,
-                  minChildSize: 0.3,
-                  builder: (BuildContext context,
-                      ScrollController scrollController) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20),
-                        ),
-                      ),
-                      child: SingleChildScrollView(
-                        controller: scrollController,
-                        child: ContactDetailsPage(contact: contact),
-                      ),
-                    );
-                  },
-                );
-              },
-            );
-          },
-          child: CircleAvatar(
-            radius: radius,
-            backgroundColor: Colors.grey.shade200,
-            backgroundImage:
-                contact.picturePath.isNotEmpty ? NetworkImage(imageUrl) : null,
-            child: contact.picturePath.isEmpty
-                ? Icon(Icons.person, size: radius)
-                : null,
-          ),
-        ),
-        onDragStarted: () {
-          _globalDragHandler.setContext(context);
-        },
-        onDragUpdate: (details) {
-          _globalDragHandler.handleDragUpdate(details);
-        },
-        onDragEnd: (details) {
-          _globalDragHandler.clearContext();
-        },
-      ),
-    );
-    refreshOffStageWidget.add(true);
   }
 
   Widget _buildContactBubbles(BuildContext context, List<Contact> contacts) {
@@ -435,138 +347,73 @@ class _HomePageState extends State<HomePage> {
         Positioned(
           top: top,
           left: left,
-          child: StreamBuilder<bool>(
-            stream: dragStopStream.stream,
-            builder: (context, snapshot) {
-              return GestureDetector(
-                onPanStart: (dragStartDetails) {
-                  setOffSetWidget(
-                    contact,
-                    radius,
-                    imageUrl,
-                    dragStartDetails.globalPosition.dy,
-                    dragStartDetails.globalPosition.dx,
-                  );
-                },
-                onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (BuildContext context) {
-                      return DraggableScrollableSheet(
-                        expand: false,
-                        initialChildSize: 0.85,
-                        maxChildSize: 0.95,
-                        minChildSize: 0.3,
-                        builder: (BuildContext context,
-                            ScrollController scrollController) {
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(20),
-                                topRight: Radius.circular(20),
-                              ),
+          child: CustomDraggable<Contact>(
+            data: contact,
+            feedback: Material(
+              color: Colors.transparent,
+              child: CircleAvatar(
+                radius: radius,
+                backgroundColor: Colors.grey.shade200,
+                backgroundImage: contact.picturePath.isNotEmpty
+                    ? NetworkImage(imageUrl)
+                    : null,
+                child: contact.picturePath.isEmpty
+                    ? Icon(Icons.person, size: radius)
+                    : null,
+              ),
+            ),
+            childWhenDragging: Container(),
+            child: GestureDetector(
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (BuildContext context) {
+                    return DraggableScrollableSheet(
+                      expand: false,
+                      initialChildSize: 0.85,
+                      maxChildSize: 0.95,
+                      minChildSize: 0.3,
+                      builder: (BuildContext context,
+                          ScrollController scrollController) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(20),
+                              topRight: Radius.circular(20),
                             ),
-                            child: SingleChildScrollView(
-                              controller: scrollController,
-                              child: ContactDetailsPage(contact: contact),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  );
-                },
-                child: CircleAvatar(
-                  radius: radius,
-                  backgroundColor: Colors.grey.shade200,
-                  backgroundImage: contact.picturePath.isNotEmpty
-                      ? NetworkImage(imageUrl)
-                      : null,
-                  child: contact.picturePath.isEmpty
-                      ? Icon(Icons.person, size: radius)
-                      : null,
-                ),
-              );
-              return Draggable<Contact>(
-                maxSimultaneousDrags: maxSimultaneousDrags,
-                data: contact,
-                feedback: Material(
-                  color: Colors.transparent,
-                  child: CircleAvatar(
-                    radius: radius,
-                    backgroundColor: Colors.grey.shade200,
-                    backgroundImage: contact.picturePath.isNotEmpty
-                        ? NetworkImage(imageUrl)
-                        : null,
-                    child: contact.picturePath.isEmpty
-                        ? Icon(Icons.person, size: radius)
-                        : null,
-                  ),
-                ),
-                childWhenDragging: Container(),
-                child: GestureDetector(
-                  onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (BuildContext context) {
-                        return DraggableScrollableSheet(
-                          expand: false,
-                          initialChildSize: 0.85,
-                          maxChildSize: 0.95,
-                          minChildSize: 0.3,
-                          builder: (BuildContext context,
-                              ScrollController scrollController) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(20),
-                                  topRight: Radius.circular(20),
-                                ),
-                              ),
-                              child: SingleChildScrollView(
-                                controller: scrollController,
-                                child: ContactDetailsPage(contact: contact),
-                              ),
-                            );
-                          },
+                          ),
+                          child: SingleChildScrollView(
+                            controller: scrollController,
+                            child: ContactDetailsPage(contact: contact),
+                          ),
                         );
                       },
                     );
                   },
-                  child: CircleAvatar(
-                    radius: radius,
-                    backgroundColor: Colors.grey.shade200,
-                    backgroundImage: contact.picturePath.isNotEmpty
-                        ? NetworkImage(imageUrl)
-                        : null,
-                    child: contact.picturePath.isEmpty
-                        ? Icon(Icons.person, size: radius)
-                        : null,
-                  ),
-                ),
-                onDragStarted: () {
-                  setOffSetWidget(contact, radius, imageUrl, top, left);
-                  //maxSimultaneousDrags = 0;
-                  // dragStopStream.add(true);
-                  _globalDragHandler.setContext(context);
-                },
-                onDragUpdate: (details) {
-                  setOffSetWidget(contact, radius, imageUrl,
-                      details.globalPosition.dy, details.globalPosition.dx);
-                  _globalDragHandler.handleDragUpdate(details);
-                  // maxSimultaneousDrags = 0;
-                  // dragStopStream.add(true);
-                },
-                onDragEnd: (details) {
-                  // _globalDragHandler.clearContext();
-                },
-              );
+                );
+              },
+              child: CircleAvatar(
+                radius: radius,
+                backgroundColor: Colors.grey.shade200,
+                backgroundImage: contact.picturePath.isNotEmpty
+                    ? NetworkImage(imageUrl)
+                    : null,
+                child: contact.picturePath.isEmpty
+                    ? Icon(Icons.person, size: radius)
+                    : null,
+              ),
+            ),
+            onDragStarted: () {
+              _globalDragHandler.setContext(context);
+            },
+            onDragUpdate: (details) {
+              _globalDragHandler.handleDragUpdate(details);
+            },
+            onDragEnd: (details) {
+              _globalDragHandler.clearContext();
             },
           ),
         ),
