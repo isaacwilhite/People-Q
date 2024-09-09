@@ -184,6 +184,7 @@ class _HomePageState extends State<HomePage> {
             if (index == 0) {
               return ContactsPage(
                 contactsFuture: _contactsFuture,
+                contextHome: context,
                 onContactDropped: (contact) =>
                     _handleContactDropped(contact, _today),
                 pageController: _globalDragHandler.pageController,

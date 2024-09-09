@@ -2,17 +2,20 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:people_q/db/models/contact.dart';
 import 'package:people_q/widgets/contact_details.dart';
-import 'package:people_q/utils/global_drag.dart';  
+import 'package:people_q/utils/global_drag.dart';
+import 'package:people_q/widgets/custom_drag.dart';
 
 class ContactsPage extends StatefulWidget {
   final Future<List<Contact>>? contactsFuture;
   final Function(Contact) onContactDropped;
   final PageController pageController;
+  final BuildContext contextHome;
 
   ContactsPage({
     required this.contactsFuture,
     required this.onContactDropped,
     required this.pageController,
+    required this.contextHome,
   });
 
   @override
@@ -25,16 +28,15 @@ class _ContactsPageState extends State<ContactsPage> {
   @override
   void initState() {
     super.initState();
-    _globalDragHandler.setContext(context);
+    _globalDragHandler.setContext(widget.contextHome);
   }
 
   @override
   void dispose() {
-    _globalDragHandler.clearContext();
     super.dispose();
   }
 
- @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -50,7 +52,7 @@ class _ContactsPageState extends State<ContactsPage> {
       ),
       body: FutureBuilder<List<Contact>>(
         future: widget.contactsFuture,
-        builder: (context, snapshot) {
+        builder: (_, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
@@ -61,11 +63,6 @@ class _ContactsPageState extends State<ContactsPage> {
             return GestureDetector(
               onHorizontalDragUpdate: (details) {
                 _globalDragHandler.handleDragUpdate(details);
-                setState(() {}); 
-              },
-              onHorizontalDragEnd: (details) {
-                _globalDragHandler.clearContext();
-                setState(() {}); 
               },
               child: Container(
                 padding: EdgeInsets.all(8.0),
@@ -75,7 +72,8 @@ class _ContactsPageState extends State<ContactsPage> {
                       child: SizedBox(
                         height: MediaQuery.of(context).size.height * 2,
                         child: Stack(
-                          children: _buildContactBubbles(context, snapshot.data!),
+                          children: _buildContactBubbles(
+                              widget.contextHome, snapshot.data!),
                         ),
                       ),
                     ),
@@ -89,8 +87,8 @@ class _ContactsPageState extends State<ContactsPage> {
     );
   }
 
-
-  List<Widget> _buildContactBubbles(BuildContext context, List<Contact> contacts) {
+  List<Widget> _buildContactBubbles(
+      BuildContext context, List<Contact> contacts) {
     final List<Widget> bubbles = [];
     final random = Random();
     final double screenWidth = MediaQuery.of(context).size.width;
@@ -100,11 +98,11 @@ class _ContactsPageState extends State<ContactsPage> {
     double yOffset = 0;
     double rowHeight = 0;
     double totalRowWidth = 0;
-    double horizontalMargin = 5.0; 
+    double horizontalMargin = 5.0;
     List<Widget> rowBubbles = [];
 
     for (var contact in contacts) {
-      double size = random.nextDouble() * 60 + 80; 
+      double size = random.nextDouble() * 60 + 80;
       double radius = size / 2;
 
       if (xOffset + size > screenWidth - 2 * horizontalMargin) {
@@ -118,10 +116,9 @@ class _ContactsPageState extends State<ContactsPage> {
           ));
         }
 
-
         rowBubbles.clear();
         xOffset = 0;
-        yOffset += rowHeight + 40; 
+        yOffset += rowHeight + 40;
         rowHeight = 0;
         totalRowWidth = 0;
       }
@@ -140,9 +137,10 @@ class _ContactsPageState extends State<ContactsPage> {
       left = max(horizontalMargin, left);
       left = min(screenWidth - horizontalMargin - size, left);
 
-      xOffset += size + 40; 
+      xOffset += size + 40;
 
-      String imageUrl = 'https://image-bucket4c010-dev.s3.us-east-2.amazonaws.com/public/${contact.picturePath}';
+      String imageUrl =
+          'https://image-bucket4c010-dev.s3.us-east-2.amazonaws.com/public/${contact.picturePath}';
 
       rowBubbles.add(
         Positioned(
@@ -166,65 +164,70 @@ class _ContactsPageState extends State<ContactsPage> {
     return bubbles;
   }
 
- Widget _buildDraggableContact(BuildContext context, Contact contact, double radius, String imageUrl) {
-  return LongPressDraggable<Contact>(
-    data: contact,
-    feedback: Material(
-      color: Colors.transparent,
-      child: CircleAvatar(
-        radius: radius,
-        backgroundColor: Colors.grey.shade200,
-        backgroundImage: contact.picturePath.isNotEmpty ? NetworkImage(imageUrl) : null,
-        child: contact.picturePath.isEmpty ? Icon(Icons.person, size: radius) : null,
-      ),
-    ),
-    childWhenDragging: Container(),
-    child: GestureDetector(
-      onTap: () {
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (BuildContext context) {
-            return DraggableScrollableSheet(
-              expand: false,
-              initialChildSize: 0.85,
-              maxChildSize: 0.95,
-              minChildSize: 0.3,
-              builder: (BuildContext context, ScrollController scrollController) {
-                return Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                    ),
-                  ),
-                  child: SingleChildScrollView(
-                    controller: scrollController,
-                    child: ContactDetailsPage(contact: contact),
-                  ),
-                );
-              },
-            );
-          },
-        );
-      },
+  Widget _buildDraggableContact(
+      BuildContext context, Contact contact, double radius, String imageUrl) {
+    return CustomDraggable<Contact>(
+      data: contact,
+      feedback: Material(
+        color: Colors.transparent,
         child: CircleAvatar(
           radius: radius,
           backgroundColor: Colors.grey.shade200,
-          backgroundImage: contact.picturePath.isNotEmpty ? NetworkImage(imageUrl) : null,
-          child: contact.picturePath.isEmpty ? Icon(Icons.person, size: radius) : null,
+          backgroundImage:
+              contact.picturePath.isNotEmpty ? NetworkImage(imageUrl) : null,
+          child: contact.picturePath.isEmpty
+              ? Icon(Icons.person, size: radius)
+              : null,
+        ),
+      ),
+      childWhenDragging: Container(),
+      child: GestureDetector(
+        onTap: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (BuildContext context) {
+              return DraggableScrollableSheet(
+                expand: false,
+                initialChildSize: 0.85,
+                maxChildSize: 0.95,
+                minChildSize: 0.3,
+                builder:
+                    (BuildContext context, ScrollController scrollController) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                    ),
+                    child: SingleChildScrollView(
+                      controller: scrollController,
+                      child: ContactDetailsPage(contact: contact),
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        },
+        child: CircleAvatar(
+          radius: radius,
+          backgroundColor: Colors.grey.shade200,
+          backgroundImage:
+              contact.picturePath.isNotEmpty ? NetworkImage(imageUrl) : null,
+          child: contact.picturePath.isEmpty
+              ? Icon(Icons.person, size: radius)
+              : null,
         ),
       ),
       onDragStarted: () {
-        _globalDragHandler.setContext(context);
+        _globalDragHandler.setContext(widget.contextHome);
       },
       onDragUpdate: (details) {
         _globalDragHandler.handleDragUpdate(details);
-      },
-      onDragEnd: (details) {
-        _globalDragHandler.clearContext();
       },
     );
   }
