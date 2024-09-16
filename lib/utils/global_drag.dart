@@ -20,22 +20,25 @@ class GlobalDragHandler {
     if (_dragPosition != null && _context != null) {
       final screenSize = MediaQuery.of(_context!).size;
       final edgeMargin = 80.0;
-
       if (_dragPosition!.dx > screenSize.width - edgeMargin) {
         if (!_isDragging) {
           _isDragging = true;
-          pageController.nextPage(
-            duration: Duration(milliseconds: 300),
-            curve: Curves.ease,
-          ).then((_) => _isDragging = false);
+          pageController
+              .nextPage(
+                duration: Duration(milliseconds: 300),
+                curve: Curves.ease,
+              )
+              .then((_) => _isDragging = false);
         }
       } else if (_dragPosition!.dx < edgeMargin) {
         if (!_isDragging) {
           _isDragging = true;
-          pageController.previousPage(
-            duration: Duration(milliseconds: 300),
-            curve: Curves.ease,
-          ).then((_) => _isDragging = false);
+          pageController
+              .previousPage(
+                duration: Duration(milliseconds: 300),
+                curve: Curves.ease,
+              )
+              .then((_) => _isDragging = false);
         }
       }
     }

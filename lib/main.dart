@@ -1,27 +1,20 @@
-import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
-import 'package:flutter/material.dart';
-import 'package:people_q/screens/signin_screen.dart';
-import 'package:people_q/screens/signup.dart';
-import 'package:people_q/screens/signup_screen.dart';
-import 'package:people_q/screens/peeple_pond.dart';
-import 'db/database.dart';
-import 'screens/home.dart';
-import './services/auth_services.dart';
-import 'package:rxdart/rxdart.dart';
 import 'dart:async';
-import 'package:provider/provider.dart';
-import './utils/global_drag.dart';
-import './services/page_navigation_controller.dart';
-import "amplifyconfiguration.dart";
+
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:people_q/widgets/splash_screen.dart'; 
+import 'package:flutter/material.dart';
+import 'package:people_q/constants/amplifyconfiguration.dart';
+import 'package:people_q/screens/signin_screen.dart';
+import 'package:people_q/screens/signup_screen.dart';
+import 'package:people_q/widgets/splash_screen.dart';
+
+import 'screens/home.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _configureAmplify();
-  await dotenv.load();
+  // await dotenv.load();
   runApp(MyApp());
 }
 
@@ -45,7 +38,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: LoadingApp(),  // Use LoadingApp to handle splash screen and auth check
+      home:
+          LoadingApp(), // Use LoadingApp to handle splash screen and auth check
       routes: {
         '/home': (context) => HomePage(),
         '/signup': (context) => SignUpScreen(),
@@ -71,7 +65,7 @@ class _LoadingAppState extends State<LoadingApp> {
 
   Future<void> _loadApp() async {
     // Simulate some loading time
-    await Future.delayed(Duration(seconds: 2));  // Adjust this as needed
+    await Future.delayed(Duration(seconds: 2)); // Adjust this as needed
     _checkAuthStatus();
   }
 
@@ -91,6 +85,8 @@ class _LoadingAppState extends State<LoadingApp> {
 
   @override
   Widget build(BuildContext context) {
-    return _isLoading ? SplashScreen() : Container();  // Show splash screen while loading
+    return _isLoading
+        ? SplashScreen()
+        : Container(); // Show splash screen while loading
   }
 }

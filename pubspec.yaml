@@ -74,7 +74,7 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-    - .env
+    - assets/.env
     - assets/QIcon-gradient.png
     - assets/Loading Screen-1.png
 
